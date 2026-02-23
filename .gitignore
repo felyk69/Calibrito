@@ -1,0 +1,11 @@
+# Banco de dados
+library.db
+
+# Pastas pesadas e dinâmicas
+Ebooks/
+covers/
+Lixeira/
+
+# Lixo do Python
+__pycache__/
+*.pyc
