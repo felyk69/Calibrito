@@ -4,309 +4,613 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kindle Library Manager</title>
+    <title>Kindle Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
-                        darkbg: '#121212',
-                        darkcard: '#1e1e1e',
-                        darkborder: '#333333',
-                        kindle: '#00A8E1'
+                        darkbg: '#0f0f0f',
+                        darkcard: '#18181b',
+                        darkborder: '#27272a',
+                        kindle: '#00A8E1',
+                        kindlehover: '#0090c1'
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
         }
     </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f0f0f;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        .book-cover-container {
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .glass-header {
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        /* --- THEME ENGINE --- */
+        /* Light Theme Overrides */
+        :root[data-theme="light"] {
+            /* Backgrounds */
+            --tw-bg-opacity: 1;
+            --color-darkbg: #f3f4f6 !important;
+            /* gray-100 */
+            --color-darkcard: #ffffff !important;
+            /* white */
+            --color-darkborder: #e5e7eb !important;
+            /* gray-200 */
+
+            /* Text elements override via cascade */
+            color: #1f2937 !important;
+            /* text-gray-800 */
+        }
+
+        :root[data-theme="light"] body {
+            background-color: #f3f4f6 !important;
+        }
+
+        :root[data-theme="light"] .bg-darkbg {
+            background-color: #f3f4f6 !important;
+        }
+
+        :root[data-theme="light"] .bg-darkcard {
+            background-color: #ffffff !important;
+        }
+
+        :root[data-theme="light"] .border-darkborder {
+            border-color: #e5e7eb !important;
+        }
+
+        :root[data-theme="light"] .text-gray-200,
+        :root[data-theme="light"] .text-gray-300 {
+            color: #111827 !important;
+        }
+
+        :root[data-theme="light"] .text-gray-400,
+        :root[data-theme="light"] .text-gray-500 {
+            color: #4b5563 !important;
+        }
+
+        :root[data-theme="light"] .glass-header {
+            background: rgba(255, 255, 255, 0.85) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        :root[data-theme="light"] .glass-panel {
+            background: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        :root[data-theme="light"] .bg-\[\#111\] {
+            background-color: #e5e7eb !important;
+        }
+
+        :root[data-theme="light"] .bg-\[\#222\] {
+            background-color: #f3f4f6 !important;
+        }
+
+        :root[data-theme="light"] .bg-\[\#1c1c1f\] {
+            background-color: #f9fafb !important;
+        }
+
+        :root[data-theme="light"] .bg-\[\#2a2a2a\] {
+            background-color: #d1d5db !important;
+            color: #111827 !important;
+        }
+
+        /* Pink Theme Overrides */
+        :root[data-theme="pink"] {
+            --color-kindle: #ec4899 !important;
+            /* pink-500 */
+            --color-kindlehover: #db2777 !important;
+            /* pink-600 */
+        }
+
+        :root[data-theme="pink"] body {
+            background-color: #fdf2f8 !important;
+        }
+
+        :root[data-theme="pink"] .bg-darkbg {
+            background-color: #fdf2f8 !important;
+        }
+
+        :root[data-theme="pink"] .bg-darkcard {
+            background-color: #fff1f2 !important;
+        }
+
+        :root[data-theme="pink"] .border-darkborder {
+            border-color: #fbcfe8 !important;
+        }
+
+        :root[data-theme="pink"] .text-gray-200,
+        :root[data-theme="pink"] .text-gray-300 {
+            color: #831843 !important;
+        }
+
+        :root[data-theme="pink"] .text-gray-400,
+        :root[data-theme="pink"] .text-gray-500 {
+            color: #be185d !important;
+        }
+
+        :root[data-theme="pink"] .glass-header {
+            background: rgba(253, 242, 248, 0.85) !important;
+            box-shadow: 0 4px 6px -1px rgba(251, 207, 232, 0.5);
+        }
+
+        :root[data-theme="pink"] .glass-panel {
+            background: rgba(255, 241, 242, 0.95) !important;
+        }
+
+        :root[data-theme="pink"] .bg-kindle {
+            background-color: #ec4899 !important;
+        }
+
+        :root[data-theme="pink"] .hover\:bg-kindlehover:hover {
+            background-color: #db2777 !important;
+        }
+
+        :root[data-theme="pink"] .border-kindle {
+            border-color: #ec4899 !important;
+        }
+
+        :root[data-theme="pink"] .ring-kindle {
+            --tw-ring-color: #ec4899 !important;
+        }
+
+        :root[data-theme="pink"] .text-kindle {
+            color: #ec4899 !important;
+        }
+
+        :root[data-theme="pink"] .bg-\[\#111\] {
+            background-color: #fce7f3 !important;
+        }
+
+        :root[data-theme="pink"] .bg-\[\#222\] {
+            background-color: #fdf2f8 !important;
+        }
+
+        :root[data-theme="pink"] .bg-\[\#1c1c1f\] {
+            background-color: #fce7f3 !important;
+        }
+
+        :root[data-theme="pink"] .bg-\[\#2a2a2a\] {
+            background-color: #f9a8d4 !important;
+            color: #831843 !important;
+        }
+
+        :root[data-theme="pink"] .shadow-kindle\/20 {
+            --tw-shadow-color: rgba(236, 72, 153, 0.3) !important;
+        }
+    </style>
 </head>
 
-<body class="bg-darkbg text-gray-200 font-sans antialiased min-h-screen p-8 relative">
-    <div class="max-w-6xl mx-auto">
-        <header
-            class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center gap-4 border-b border-darkborder pb-4">
-            <div>
-                <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-2">
-                    <svg class="w-8 h-8 text-kindle" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-                        </path>
-                    </svg>
-                    Biblioteca Kindle
-                </h1>
-                <p class="text-sm text-gray-400 mt-1">Selecione os e-books e envie para o dispositivo</p>
-            </div>
-            <div class="flex items-center gap-4 flex-wrap justify-end">
-                <!-- Filtro de Dispositivo -->
-                <div class="flex items-center bg-darkbg rounded-md p-1 border border-darkborder shadow-inner mr-2">
-                    <button id="btnKindleFilter" onclick="setDeviceFilter('kindle')"
-                        class="px-3 py-1.5 rounded-md bg-[#2a2a2a] text-white text-xs font-semibold transition-colors flex items-center gap-1.5 focus:outline-none"
-                        title="Apenas formatos nativos do Kindle">
-                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M16 3H8C6.3 3 5 4.3 5 6v12c0 1.7 1.3 3 3 3h8c1.7 0 3-1.3 3-3V6c0-1.7-1.3-3-3-3zm-4 15c-.8 0-1.5-.7-1.5-1.5S11.2 15 12 15s1.5.7 1.5 1.5S12.8 18 12 18z" />
-                        </svg>
-                        Nativo
-                    </button>
-                    <button id="btnKOReaderFilter" onclick="setDeviceFilter('koreader')"
-                        class="px-3 py-1.5 text-gray-500 hover:text-white rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 focus:outline-none"
-                        title="Todos os arquivos, incluindo PDF, CBZ, CBR, DJVU">
-                        <span
-                            class="w-3.5 h-3.5 flex items-center justify-center font-bold text-[10px] bg-gray-600 rounded-full text-white">K</span>
-                        KOReader
-                    </button>
-                </div>
+<body class="bg-darkbg text-gray-300 font-sans antialiased min-h-screen pb-24">
 
-                <!-- Search -->
-                <div class="flex items-center bg-darkbg rounded-md p-1 border border-darkborder mr-2">
-                    <svg class="w-4 h-4 text-gray-400 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    <input type="text" id="searchInput" placeholder="Buscar título ou autor..." oninput="applyFilters()"
-                        class="bg-transparent border-none text-sm text-gray-300 focus:outline-none focus:ring-0 ml-2 w-48 placeholder-gray-500">
-                </div>
+    <!-- Caminhos Ocultos para Lógica -->
+    <input type="hidden" id="kindlePath" value="D:/documents">
+    <input type="hidden" id="detectedKOReaderPath" value="">
+    <input type="hidden" id="detectedKindlePath" value="">
 
-                <!-- Manutenção Mode Toggle -->
-                <div class="flex items-center mr-2 gap-2">
-                    <button id="btnMaintenance" onclick="toggleMaintenanceMode()"
-                        class="p-1.5 rounded bg-darkbg border border-darkborder text-gray-500 hover:text-red-400 transition-colors"
-                        title="Modo Exclusão (Mover para Lixeira)">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Header Fixo -->
+    <header id="mainHeader"
+        class="sticky top-0 z-40 border-b border-darkborder glass-header shadow-lg shadow-black/20 transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Top Row: Logo, Connection, Settings -->
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div
+                        class="bg-gradient-to-br from-kindle to-blue-600 w-9 h-9 rounded-xl flex items-center justify-center shadow-lg shadow-kindle/20">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                            </path>
+                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                         </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-white tracking-tight hidden sm:block">Kindle<span
+                            class="text-kindle">Manager</span></h1>
+                </div>
+
+                <!-- Right Actions -->
+                <div
+                    class="flex items-center gap-3 w-full md:w-auto overflow-x-auto justify-end custom-scrollbar shrink-0">
+
+                    <!-- Device Toggle -->
+                    <div class="flex bg-darkcard rounded-lg p-1 border border-darkborder shrink-0">
+                        <button id="btnKindleFilter" onclick="setDeviceFilter('kindle')"
+                            class="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all bg-[#2a2a2a] text-white"><svg
+                                class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 3H8C6.3 3 5 4.3 5 6v12c0 1.7 1.3 3 3 3h8c1.7 0 3-1.3 3-3V6c0-1.7-1.3-3-3-3zm-4 15c-.8 0-1.5-.7-1.5-1.5S11.2 15 12 15s1.5.7 1.5 1.5S12.8 18 12 18z" />
+                            </svg>Kindle</button>
+                        <button id="btnKOReaderFilter" onclick="setDeviceFilter('koreader')"
+                            class="px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-gray-500 hover:text-white"><span
+                                class="w-3.5 h-3.5 flex items-center justify-center font-bold text-[9px] bg-gray-700 rounded text-white">K</span>KOReader</button>
+                    </div>
+
+                    <!-- Connection Status Pill -->
+                    <button onclick="handleConnectionClick()" id="connectionBadge"
+                        class="group flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-darkborder bg-darkcard/50 hover:bg-darkcard hover:border-gray-600 transition-all cursor-pointer shrink-0">
+                        <div id="statusDot" class="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></div>
+                        <span id="statusText"
+                            class="text-xs font-semibold text-gray-400 uppercase tracking-wider group-hover:text-white transition-colors">Buscando
+                            USB...</span>
                     </button>
+
+                    <div class="w-px h-6 bg-darkborder shrink-0 hidden sm:block"></div>
+
+                    <!-- Theme Switcher -->
+                    <div class="flex items-center gap-1.5 bg-darkcard border border-darkborder rounded-lg p-1 shrink-0">
+                        <select id="themeSelector" onchange="applyTheme(this.value)"
+                            class="bg-transparent text-gray-300 text-xs font-semibold focus:outline-none cursor-pointer pl-1 pr-6 py-1 appearance-none hover:text-white transition-colors">
+                            <option value="dark" class="bg-darkcard text-gray-200">🌙 Dark</option>
+                            <option value="light" class="bg-darkcard text-gray-200">☀️ Claro</option>
+                            <option value="pink" class="bg-darkcard text-gray-200">🌸 Rosa</option>
+                        </select>
+                    </div>
+
                     <!-- Settings Button -->
-                    <button id="btnSettings" onclick="openSettingsModal()"
-                        class="p-1.5 rounded bg-darkbg border border-darkborder text-gray-500 hover:text-gray-300 transition-colors"
-                        title="Configurações">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button onclick="openSettingsModal()"
+                        class="p-2 rounded-lg text-gray-500 hover:bg-darkcard hover:text-white transition-colors shrink-0"
+                        title="Configurações"><svg class="w-5 h-5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
                             </path>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="flex items-center bg-darkbg rounded-md p-1 border border-darkborder shadow-inner mr-2">
-                    <button id="btnListView" onclick="setViewMode('list')"
-                        class="p-1.5 rounded bg-[#2a2a2a] text-white transition-colors" title="Ver como Lista">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                    <button id="btnGalleryView" onclick="setViewMode('gallery')"
-                        class="p-1.5 rounded text-gray-500 hover:text-white transition-colors" title="Ver como Galeria">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
-                            </path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="flex items-center gap-3 border-l border-darkborder pl-4">
-                    <label for="kindlePath" class="text-sm text-gray-400 font-medium whitespace-nowrap">Drive
-                        USB:</label>
-                    <input type="text" id="kindlePath" value="D:/documents" title="Caminho /documents na USB do Kindle"
-                        class="bg-darkcard border border-darkborder text-sm rounded-md px-3 py-2 text-gray-300 focus:outline-none focus:border-kindle w-36 transition-colors">
-                    <button onclick="autoDetectKindle()"
-                        class="p-2 bg-[#2a2a2a] hover:bg-[#3a3a3a] rounded-md transition-colors text-kindle hover:text-blue-400"
-                        title="Detectar Kindle automaticamente" id="btnAutoDetect">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
-                            </path>
-                        </svg>
-                    </button>
+                        </svg></button>
                 </div>
             </div>
-        </header>
 
-        <!-- Container Visão de Tabela -->
+            <!-- Bottom Row: Toolbar -->
+            <div class="flex flex-col xl:flex-row xl:items-center gap-4 justify-between pb-4 pt-2">
+
+                <!-- Left Group: Search, Formats & Sort -->
+                <div class="flex flex-wrap items-center gap-3 w-full xl:w-auto justify-center xl:justify-start">
+
+                    <!-- Search Bar -->
+                    <div class="relative w-full sm:w-48 group shrink-0">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-500 group-focus-within:text-kindle transition-colors"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="searchInput" oninput="applyFilters()"
+                            class="block w-full pl-9 pr-3 py-1.5 border border-darkborder rounded-lg leading-5 bg-darkcard text-gray-300 placeholder-gray-600 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle text-sm transition-all"
+                            placeholder="Buscar título/autor...">
+                    </div>
+
+                    <div class="w-px h-6 bg-darkborder shrink-0 hidden sm:block"></div>
+
+                    <!-- Format Filters -->
+                    <div class="flex bg-darkcard rounded-lg p-1 border border-darkborder shrink-0" id="formatFilters">
+                        <button onclick="setFormatFilter('all')"
+                            class="format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-[#2a2a2a] text-white"
+                            data-format="all">Todos</button>
+                        <button onclick="setFormatFilter('.pdf')" id="filterBtnPDF"
+                            class="format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-gray-500 hover:text-white hidden"
+                            data-format=".pdf">PDF</button>
+                        <button onclick="setFormatFilter('.epub')"
+                            class="format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-gray-500 hover:text-white"
+                            data-format=".epub">EPUB</button>
+                        <button onclick="setFormatFilter('.mobi')"
+                            class="format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-gray-500 hover:text-white"
+                            data-format=".mobi">MOBI</button>
+                        <button onclick="setFormatFilter('.azw3')"
+                            class="format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-gray-500 hover:text-white"
+                            data-format=".azw3">AZW3</button>
+                        <button onclick="setFormatFilter('.cbz')" id="filterBtnCBZ"
+                            class="format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-gray-500 hover:text-white hidden"
+                            data-format=".cbz">CBZ</button>
+                    </div>
+
+                    <!-- Sorting Options -->
+                    <div class="flex items-center gap-1.5 bg-darkcard border border-darkborder rounded-lg p-1 shrink-0">
+                        <select id="sortOption" onchange="applyFilters()"
+                            class="bg-transparent text-gray-300 text-xs font-semibold focus:outline-none cursor-pointer pl-1 pr-6 py-1 appearance-none hover:text-white transition-colors">
+                            <option value="added_date" class="bg-darkcard text-gray-200">Recentes</option>
+                            <option value="title" class="bg-darkcard text-gray-200">Título</option>
+                            <option value="author" class="bg-darkcard text-gray-200">Autor</option>
+                        </select>
+                        <button id="sortOrderToggle" onclick="toggleSortOrder()"
+                            class="p-1 px-2 text-gray-500 hover:text-white hover:bg-[#2a2a2a] rounded transition-all flex items-center justify-center font-bold text-xs"
+                            title="Inverter Ordem">
+                            <span id="sortOrderIcon">⬇️</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Group: Zoom, Trash & View -->
+                <div class="flex items-center justify-center gap-3 shrink-0 w-full xl:w-auto">
+                    <!-- Zoom Slider -->
+                    <div class="hidden md:flex flex-1 items-center justify-center gap-4 px-2 relative group">
+                        <button onclick="adjustZoom(-1)"
+                            class="w-6 h-6 rounded-full border border-darkborder flex items-center justify-center text-gray-500 hover:text-white hover:border-gray-500 transition-colors shrink-0">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+                            </svg>
+                        </button>
+                        <div class="relative w-24 flex items-center">
+                            <input type="range" id="zoomSlider" min="0" max="4" value="2" step="1"
+                                class="w-full accent-kindle cursor-pointer h-[2px] bg-darkborder rounded-lg appearance-none relative z-10"
+                                oninput="handleZoomSlider()">
+                        </div>
+                        <button onclick="adjustZoom(1)"
+                            class="w-6 h-6 rounded-full border border-darkborder flex items-center justify-center text-gray-500 hover:text-white hover:border-gray-500 transition-colors shrink-0">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4v16m8-8H4" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="w-px h-6 bg-darkborder shrink-0 hidden sm:block"></div>
+
+                    <!-- Maintenance Button (Edit Mode) -->
+                    <button onclick="toggleMaintenanceMode()" id="btnMaintenance"
+                        class="p-2 rounded-lg text-gray-500 hover:bg-orange-500/10 hover:text-orange-400 transition-colors shrink-0"
+                        title="Gerenciar Biblioteca (Modo Edição)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+
+                    <div class="w-px h-6 bg-darkborder shrink-0 hidden sm:block"></div>
+
+                    <!-- View Toggle -->
+                    <div class="flex bg-darkcard rounded-lg p-1 border border-darkborder shrink-0">
+                        <button id="btnListView" onclick="setViewMode('list')"
+                            class="p-1.5 rounded-md text-gray-500 hover:text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                        <button id="btnGalleryView" onclick="setViewMode('gallery')"
+                            class="p-1.5 rounded-md bg-[#2a2a2a] text-white transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- View Containers -->
+        <div id="loadingState" class="hidden">
+            <!-- Skeleton Loader Grid -->
+            <div class="grid gap-6 animate-pulse"
+                style="grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-w, 160px), 1fr));">
+                <!-- Javascript fills this -->
+            </div>
+        </div>
+
         <div id="listViewContainer"
-            class="bg-darkcard border border-darkborder rounded-lg overflow-hidden shadow-2xl relative block">
-            <div class="max-h-[70vh] overflow-y-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse relative">
-                    <thead class="sticky top-0 z-10 bg-[#252525] shadow-sm">
-                        <tr class="text-gray-400 text-xs uppercase tracking-wider">
-                            <th class="py-4 px-6 font-semibold w-12 text-center"></th> <!-- Checkbox column -->
-                            <th class="py-4 px-6 font-semibold w-16 text-center">Capa</th>
-                            <th class="py-4 px-6 font-semibold">Título do Livro</th>
-                            <th class="py-4 px-6 font-semibold w-1/4">Autor</th>
-                            <th class="py-4 px-6 font-semibold w-24 text-center">Formato</th>
+            class="hidden bg-darkcard border border-darkborder rounded-xl overflow-hidden shadow-lg">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-[#1c1c1f] border-b border-darkborder">
+                        <tr class="text-xs uppercase tracking-wider text-gray-500 font-medium">
+                            <th class="py-4 px-6 w-12 text-center">
+                                <button onclick="toggleSelectAll()"
+                                    class="hover:text-white transition-colors">Todos</button>
+                            </th>
+                            <th class="py-4 px-6 w-16 text-center">Capa</th>
+                            <th class="py-4 px-6">Título</th>
+                            <th class="py-4 px-6 w-1/4">Autor</th>
+                            <th class="py-4 px-6 w-24 text-center">Tipo</th>
+                            <th class="py-4 px-6 w-20 text-right">Ações</th>
                         </tr>
                     </thead>
-                    <tbody id="booksTable" class="divide-y divide-darkborder text-sm">
-                        <tr>
-                            <td colspan="5" class="py-12 text-center text-gray-500" id="tableLoadingState">
-                                Carregando biblioteca...
-                            </td>
-                        </tr>
+                    <tbody id="booksTable" class="divide-y divide-darkborder text-sm text-gray-300">
+                        <!-- JS content -->
                     </tbody>
                 </table>
+                <div id="listObserverTarget" class="h-10 w-full mt-4">
+                    <div class="hidden animate-spin rounded-full h-8 w-8 border-b-2 border-kindle mx-auto"
+                        id="loadingSpinnerList"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Container Visão de Galeria -->
-        <div id="galleryViewContainer" class="hidden">
-            <div id="galleryGrid"
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                <!-- Cards carregados via JS -->
+        <div id="galleryViewContainer">
+            <div id="galleryGrid" class="grid gap-6"
+                style="grid-template-columns: repeat(auto-fill, minmax(var(--grid-card-w, 160px), 1fr));">
+                <!-- JS content -->
             </div>
-            <div id="galleryEmptyState" class="hidden py-12 text-center text-gray-500 w-full col-span-full">
-                Nenhum e-book encontrado.
+            <div id="gridObserverTarget" class="h-10 w-full mt-4 flex items-center justify-center">
+                <div class="hidden animate-spin rounded-full h-8 w-8 border-b-2 border-kindle" id="loadingSpinnerGrid">
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Floating Widget for Selection pinned bottom right -->
-    <div id="selectionWidget"
-        class="fixed bottom-6 right-6 w-80 bg-darkcard border border-darkborder rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.5)] z-40 flex flex-col transition-all duration-300 hidden group">
-
-        <div
-            class="px-4 py-3 border-b border-darkborder flex justify-between items-center bg-[#252525] rounded-t-xl group-hover:bg-[#2a2a2a] transition-colors cursor-default">
-            <h2 class="font-bold text-sm flex items-center gap-2">
-                <svg class="w-4 h-4 text-kindle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
+            <div class="bg-darkcard p-6 rounded-full border border-darkborder mb-4">
+                <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
-                    </path>
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
-                Fila (<span id="selectedCount">0</span>)
-            </h2>
-            <button onclick="clearSelection()" id="btnClear"
-                class="text-xs text-red-400 hover:text-red-300 transition-colors">Limpar</button>
+            </div>
+            <h3 class="text-lg font-medium text-white mb-1">Nenhum livro encontrado</h3>
+            <p class="text-gray-500 text-sm max-w-sm mb-6">Não encontramos nada correspondente à sua busca ou filtro.
+            </p>
+            <button onclick="document.getElementById('searchInput').value=''; applyFilters()"
+                class="px-4 py-2 bg-darkcard hover:bg-darkborder border border-darkborder rounded-lg text-sm text-white transition-colors">
+                Limpar Busca
+            </button>
         </div>
 
-        <!-- The list height collapses to ~110px (about 2 items) and expands on hover -->
-        <div id="selectedList"
-            class="flex-1 overflow-y-auto px-4 py-3 space-y-2 custom-scrollbar transition-all duration-300 max-h-[115px] group-hover:max-h-[50vh]">
-            <!-- Selected items injected here -->
-            <div class="text-sm text-gray-500 text-center italic mt-10">Nenhum livro selecionado. Clique em um livro
-                para adicioná-lo à fila.</div>
+    </main>
+
+    <!-- Bottom Action Bar (Dock) -->
+    <div id="selectionBar"
+        class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-glass-panel border border-darkborder/50 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-6 z-50 transition-all duration-300 translate-y-32 backdrop-blur-md bg-[#18181b]/90 ring-1 ring-white/10">
+        <div class="flex items-center gap-3 border-r border-gray-700 pr-4">
+            <span class="bg-kindle text-white text-xs font-bold px-2 py-0.5 rounded-full"
+                id="selectedCountBadge">0</span>
+            <span class="text-sm font-medium text-gray-300">Selecionados</span>
         </div>
 
-        <div
-            class="p-3 border-t border-darkborder bg-[#252525] rounded-b-xl group-hover:bg-[#2a2a2a] transition-colors">
-            <button id="btnSendBatch" onclick="sendSelectedBatch()" disabled
-                class="w-full bg-kindle hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded transition-colors flex flex-row items-center justify-center gap-2 text-sm shadow-md">
+        <div class="flex items-center gap-2">
+            <button onclick="clearSelection()"
+                class="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                title="Limpar Seleção">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <button id="btnActionBarSend" onclick="sendSelectedBatch()"
+                class="flex items-center gap-2 px-5 py-2 bg-kindle hover:bg-kindlehover text-white font-semibold rounded-xl shadow-lg shadow-kindle/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                <span id="btnSendText">Enviar <span id="btnSendBatchCount"></span></span>
+                <span>Enviar para Kindle</span>
             </button>
         </div>
     </div>
 
-    <!-- Modal for Edit -->
+    <!-- Modals (Edit, Settings, Delete, Detect) -->
+    <!-- Edit Modal -->
     <div id="editModal"
-        class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-darkcard border border-darkborder rounded-xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-300"
+        class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+        <div class="bg-darkcard border border-darkborder rounded-2xl shadow-2xl w-full max-w-2xl p-6 transform scale-95 transition-all duration-200 relative flex flex-col max-h-[90vh]"
             id="editModalContent">
-            <h2 class="text-xl font-bold text-white mb-4">Editar Livro</h2>
-            <input type="hidden" id="editBookId">
-            <div class="mb-4">
-                <label class="block text-sm text-gray-400 mb-1">Título</label>
-                <input type="text" id="editTitle"
-                    class="w-full bg-darkbg border border-darkborder rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:border-kindle">
-            </div>
-            <div class="mb-6">
-                <label class="block text-sm text-gray-400 mb-1">Autor</label>
-                <input type="text" id="editAuthor"
-                    class="w-full bg-darkbg border border-darkborder rounded-md px-3 py-2 text-gray-200 focus:outline-none focus:border-kindle">
-            </div>
-            <div class="flex justify-end gap-3">
-                <button onclick="closeEditModal()"
-                    class="px-4 py-2 rounded text-gray-400 hover:bg-[#2a2a2a] transition-colors font-medium">Cancelar</button>
-                <button onclick="saveEditBook()" id="btnSaveEdit"
-                    class="px-4 py-2 bg-kindle hover:bg-blue-500 text-white rounded font-medium shadow transition-colors flex items-center gap-2">
-                    <svg id="editSpinner" class="animate-spin h-4 w-4 text-white hidden" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
+
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <h2 class="text-xl font-bold text-white">Editar Metadados</h2>
+                <button onclick="searchMetadata()" id="btnSearchMeta"
+                    class="px-3 py-1.5 bg-[#2a2a2a] hover:bg-gray-700 text-gray-300 hover:text-white rounded-lg text-sm font-medium flex items-center gap-2 transition-colors border border-gray-600">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
-                    Salvar
+                    Buscar na Internet
                 </button>
             </div>
-        </div>
-    </div>
 
-    <!-- Modal KOReader Detectado -->
-    <div id="koreaderDetectModal"
-        class="fixed inset-0 bg-black/80 hidden z-[60] flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-darkcard border border-darkborder rounded-xl shadow-2xl w-full max-w-md p-8 transform scale-95 transition-transform duration-300 text-center"
-            id="koreaderDetectContent">
-            <div
-                class="w-16 h-16 bg-[#2a2a2a] rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-[#333]">
-                <span class="font-bold text-2xl text-white">K</span>
+            <input type="hidden" id="editBookId">
+            <input type="hidden" id="editCoverUrl">
+
+            <!-- Metadata Search Results Container -->
+            <div id="metaSearchResults"
+                class="hidden shrink-0 mb-6 bg-darkbg border border-darkborder rounded-xl p-3 overflow-x-auto flex gap-4 snap-x">
+                <!-- Results injected here -->
             </div>
-            <h2 class="text-2xl font-bold text-white mb-2">Kindle + KOReader</h2>
-            <p class="text-gray-400 text-sm mb-8">Identificamos que seu Kindle possui o KOReader. Como você deseja
-                gerenciar seus livros hoje?</p>
 
-            <input type="hidden" id="detectedKOReaderPath" value="">
-            <input type="hidden" id="detectedKindlePath" value="">
+            <div class="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Título do
+                            Livro</label>
+                        <input type="text" id="editTitle"
+                            class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Autor(es)</label>
+                        <input type="text" id="editAuthor"
+                            class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all">
+                    </div>
+                </div>
 
-            <div class="flex flex-col gap-3">
-                <button onclick="selectAutoDetectMode('koreader')"
-                    class="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-bold transition-colors shadow">
-                    Modo KOReader (PDFs, Mangás)
-                </button>
-                <button onclick="selectAutoDetectMode('kindle')"
-                    class="w-full py-3 bg-kindle hover:bg-blue-500 text-white rounded-lg font-bold transition-colors shadow">
-                    Modo Kindle Padrão
-                </button>
-                <button onclick="closeKOReaderDetectModal()"
-                    class="mt-2 text-sm text-gray-500 hover:text-gray-300 transition-colors">Ignorar</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Série /
+                            Coleção</label>
+                        <input type="text" id="editSeries" placeholder="Ex: Harry Potter"
+                            class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Volume</label>
+                        <input type="number" step="0.1" id="editVolume" placeholder="Ex: 1"
+                            class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Editora</label>
+                        <input type="text" id="editPublisher"
+                            class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all">
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Ano</label>
+                        <input type="number" id="editPublishYear"
+                            class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">Sinopse</label>
+                    <textarea id="editSynopsis" rows="4"
+                        class="w-full bg-darkbg border border-darkborder rounded-lg px-4 py-2.5 text-gray-200 focus:outline-none focus:border-kindle focus:ring-1 focus:ring-kindle transition-all resize-none"></textarea>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Delete Modal -->
-    <div id="deleteModal"
-        class="fixed inset-0 bg-black/80 hidden z-[70] flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div id="deleteModalContent"
-            class="bg-darkcard border border-darkborder rounded-xl shadow-2xl p-6 w-full max-w-md transform scale-95 transition-transform duration-300 relative">
-            <button onclick="closeDeleteModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-            <h2 class="text-xl font-bold text-red-500 mb-4 flex items-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                    </path>
-                </svg>
-                Atenção: Exclusão
-            </h2>
-            <p class="text-gray-300 mb-4 text-sm" id="deleteModalText">Você está prestes a apagar os livros
-                selecionados. Eles serão movidos para a Lixeira.</p>
-            <div class="mb-6 flex items-center gap-2">
-                <input type="checkbox" id="permanentDeleteCheck"
-                    class="w-4 h-4 text-red-500 rounded bg-[#2a2a2a] border-darkborder focus:ring-red-500">
-                <label for="permanentDeleteCheck" class="text-sm font-medium text-red-400 cursor-pointer">Excluir
-                    definitivamente (não mover para Lixeira)</label>
-            </div>
-            <div class="flex justify-end gap-3">
-                <button onclick="closeDeleteModal()"
-                    class="px-4 py-2 rounded bg-[#2a2a2a] text-gray-300 hover:bg-[#333] transition-colors text-sm font-medium">Cancelar</button>
-                <button onclick="confirmDeleteBatch()"
-                    class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white transition-colors text-sm font-medium flex items-center gap-2"
-                    id="btnConfirmDelete">
-                    Excluir
+            <div class="mt-6 shrink-0 flex justify-end gap-3 pt-4 border-t border-darkborder">
+                <button onclick="closeEditModal()"
+                    class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">Cancelar</button>
+                <button onclick="saveEditBook()" id="btnSaveEdit"
+                    class="px-6 py-2 bg-kindle hover:bg-kindlehover text-white rounded-lg font-medium shadow-lg shadow-kindle/20 transition-all flex items-center gap-2">
+                    Salvar Alterações
                 </button>
             </div>
         </div>
@@ -314,239 +618,678 @@
 
     <!-- Settings Modal -->
     <div id="settingsModal"
-        class="fixed inset-0 bg-black/80 hidden z-[70] flex justify-center items-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div id="settingsModalContent"
-            class="bg-darkcard border border-darkborder rounded-xl shadow-2xl w-full max-w-lg p-6 transform scale-95 transition-transform duration-300 relative">
-            <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                    </path>
-                </svg>
-            </button>
-            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                    </path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                Configurações do Sistema
-            </h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-400 mb-1 font-medium">Pasta da Biblioteca (Onde buscar os
-                        E-books)</label>
+        class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeSettingsModal()"></div>
+        <div class="bg-darkcard border border-darkborder rounded-2xl shadow-2xl w-full max-w-lg p-6 transform scale-95 transition-all duration-200"
+            id="settingsModalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">Configurações</h2>
+                <button onclick="closeSettingsModal()" class="text-gray-500 hover:text-white"><svg class="w-5 h-5"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg></button>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-[#1c1c1f] p-4 rounded-xl border border-darkborder">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Pasta da Biblioteca (PC)</label>
                     <div class="flex gap-2">
                         <input type="text" id="cfgBooksFolder"
-                            class="flex-1 bg-darkbg border border-darkborder rounded-md px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-kindle">
+                            class="flex-1 bg-darkbg border border-darkborder rounded-lg px-3 py-2 text-sm text-gray-400 focus:outline-none focus:border-kindle"
+                            readonly>
                         <button onclick="pickFolderFor('cfgBooksFolder')"
-                            class="px-3 py-2 rounded bg-[#2a2a2a] text-gray-300 hover:text-white transition-colors text-sm font-medium border border-darkborder">
-                            Procurar...
+                            class="px-3 py-2 bg-darkcard hover:bg-darkborder border border-darkborder rounded-lg text-gray-300 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                            </svg>
                         </button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Ao salvar, o sistema fará um novo scan desta pasta.</p>
+                </div>
+
+                <div class="bg-[#1c1c1f] p-4 rounded-xl border border-darkborder">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Processamento Simultâneo
+                        (Threads)</label>
+                    <p class="text-xs text-gray-500 mb-2">Quantos livros o sistema tentará escanear por vez. Mais
+                        threads = mais rápido, porém requer mais RAM e CPU. Recomendado: 2.</p>
+                    <input type="number" id="cfgScannerThreads" min="1" max="16" value="2"
+                        class="w-full bg-darkbg border border-darkborder rounded-lg px-3 py-2 text-sm text-gray-400 focus:outline-none focus:border-kindle">
+                </div>
+
+                <div class="bg-[#1c1c1f] p-4 rounded-xl border border-darkborder">
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Caminho Manual do Kindle (USB)</label>
+                    <p class="text-xs text-gray-500 mb-2">Altere apenas se a detecção automática falhar.</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="manualKindlePathInput"
+                            onchange="document.getElementById('kindlePath').value = this.value"
+                            class="flex-1 bg-darkbg border border-darkborder rounded-lg px-3 py-2 text-sm text-gray-400 focus:outline-none focus:border-kindle">
+                        <button onclick="pickFolderFor('manualKindlePathInput')"
+                            class="px-3 py-2 bg-darkcard hover:bg-darkborder border border-darkborder rounded-lg text-gray-300 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div class="mt-8 flex justify-end gap-3">
-                <button onclick="closeSettingsModal()"
-                    class="px-4 py-2 rounded text-gray-400 hover:bg-[#2a2a2a] transition-colors font-medium text-sm">Cancelar</button>
+
+            <div class="mt-8 flex justify-end">
                 <button onclick="saveSettings()" id="btnSaveSettings"
-                    class="px-4 py-2 bg-kindle hover:bg-blue-500 text-white rounded font-medium shadow transition-colors flex items-center gap-2 text-sm">
-                    <svg id="settingsSpinner" class="animate-spin h-4 w-4 text-white hidden" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                    Salvar e Reiniciar
+                    class="px-6 py-2 bg-white text-black hover:bg-gray-200 rounded-lg font-bold transition-colors w-full sm:w-auto">
+                    Salvar e Re-escanear
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast"
-        class="fixed bottom-6 right-6 transform transition-all duration-300 translate-y-20 opacity-0 flex items-center gap-3 px-6 py-4 rounded-md shadow-2xl z-50 pointer-events-none">
-        <svg id="toastIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"></svg>
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+        <div class="bg-darkcard border border-red-900/30 rounded-2xl shadow-2xl w-full max-w-sm p-6 transform scale-95 transition-all duration-200 text-center"
+            id="deleteModalContent">
+            <div
+                class="w-16 h-16 bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Excluir Livros?</h3>
+            <p class="text-gray-400 text-sm mb-6" id="deleteModalText">Tem certeza que deseja remover os itens
+                selecionados?</p>
+
+            <div
+                class="flex items-center justify-center gap-2 mb-6 bg-red-900/10 p-2 rounded-lg border border-red-900/20">
+                <input type="checkbox" id="permanentDeleteCheck"
+                    class="rounded bg-darkbg border-red-900 text-red-500 focus:ring-0">
+                <label for="permanentDeleteCheck" class="text-xs text-red-400 font-medium">Excluir
+                    Permanentemente</label>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeDeleteModal()"
+                    class="flex-1 py-2.5 rounded-xl bg-darkbg border border-darkborder text-gray-300 hover:bg-darkborder font-medium transition-colors">Cancelar</button>
+                <button onclick="confirmDeleteBatch()" id="btnConfirmDelete"
+                    class="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold transition-colors shadow-lg shadow-red-900/20">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KOReader Detection Modal -->
+    <div id="koreaderDetectModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="bg-darkcard border border-darkborder rounded-2xl shadow-2xl w-full max-w-md p-8 transform scale-95 transition-all duration-200 text-center relative"
+            id="koreaderDetectContent">
+            <div
+                class="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-800 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl border border-gray-600 rotate-3">
+                <span class="font-bold text-4xl text-white">K</span>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-3">Dispositivo Híbrido</h2>
+            <p class="text-gray-400 text-sm mb-8 leading-relaxed">Identificamos o <b>KOReader</b> instalado no seu
+                Kindle. Para qual biblioteca você deseja enviar seus livros hoje?</p>
+
+            <div class="grid gap-3">
+                <button onclick="selectAutoDetectMode('koreader')"
+                    class="group relative w-full py-4 bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-xl transition-all overflow-hidden">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700">
+                    </div>
+                    <span class="font-bold text-white relative z-10 flex items-center justify-center gap-2">
+                        <span>KOReader</span>
+                        <span class="text-[10px] bg-gray-600 px-1.5 py-0.5 rounded text-gray-300 font-normal">PDF / CBZ
+                            / EPUB</span>
+                    </span>
+                </button>
+                <button onclick="selectAutoDetectMode('kindle')"
+                    class="w-full py-4 bg-kindle hover:bg-kindlehover text-white rounded-xl font-bold transition-colors shadow-lg shadow-kindle/20">
+                    Kindle Nativo
+                </button>
+            </div>
+            <button onclick="closeKOReaderDetectModal()"
+                class="mt-6 text-xs text-gray-600 hover:text-gray-400 underline">Ignorar detecção</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification (Top Center) -->
+    <div id="toast" style="z-index: 9999;"
+        class="fixed top-24 left-1/2 -translate-x-1/2 transform -translate-y-10 opacity-0 flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl pointer-events-none transition-all duration-300 border backdrop-blur-md">
+        <div id="toastIcon"></div>
         <span id="toastMsg" class="font-medium text-sm"></span>
     </div>
 
-    <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-        }
 
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #1e1e1e;
-        }
+    <!-- Web Reader Modal -->
+    <div id="readerModal" style="z-index: 150;"
+        class="fixed inset-0 bg-white dark:bg-[#0f0f0f] flex flex-col pointer-events-none opacity-0 transition-opacity duration-300">
+        <div
+            class="flex justify-between items-center p-3 border-b dark:border-darkborder border-gray-200 glass-header shrink-0">
+            <h2 id="readerTitle"
+                class="text-base sm:text-lg font-bold dark:text-gray-200 text-gray-800 truncate pr-4 pl-2">Lendo...</h2>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleReaderTheme()" id="btnReaderTheme"
+                    class="p-2 dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-black rounded-lg dark:hover:bg-darkcard hover:bg-gray-100 transition-colors"
+                    title="Alternar Tema Escuro/Claro">
+                    ☀️/🌙
+                </button>
+                <div class="w-px h-6 bg-gray-300 dark:bg-darkborder mx-1"></div>
+                <button onclick="closeReader()"
+                    class="p-2 dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-black rounded-lg dark:hover:bg-darkcard hover:bg-gray-100 transition-colors"
+                    title="Fechar Leitor">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
 
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #444;
-            border-radius: 4px;
-        }
+        <div class="relative flex-1 flex flex-col overflow-hidden">
+            <button id="readerPrev" onclick="readerNavigate(-1)"
+                class="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-4 bg-gray-200/50 dark:bg-darkcard/50 hover:bg-gray-300 dark:hover:bg-darkcard text-black dark:text-white rounded-full backdrop-blur-md transition-colors border border-gray-300 dark:border-darkborder/50 shadow-lg">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
 
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
+            <!-- container where epub renders -->
+            <div id="viewer" class="w-full h-full transition-colors z-0 flex items-center justify-center"></div>
 
-        .book-cover {
-            object-fit: cover;
-            background-color: #2a2a2a;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-        }
+            <button id="readerNext" onclick="readerNavigate(1)"
+                class="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-4 bg-gray-200/50 dark:bg-darkcard/50 hover:bg-gray-300 dark:hover:bg-darkcard text-black dark:text-white rounded-full backdrop-blur-md transition-colors border border-gray-300 dark:border-darkborder/50 shadow-lg">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+        </div>
 
-        .selected-row {
-            background-color: rgba(0, 168, 225, 0.1) !important;
-        }
-
-        .selected-card {
-            outline: 2px solid #00A8E1;
-            transform: translateY(-4px);
-        }
-
-        .animate-spin-slow {
-            animation: spin 2s linear infinite;
-        }
-    </style>
+        <div class="h-1 bg-gray-200 dark:bg-darkcard w-full shrink-0">
+            <div id="readerProgressBar" class="h-full bg-kindle w-0 transition-all duration-300"></div>
+        </div>
+    </div>
 
     <script>
+        // --- Global State ---
         let allBooks = [];
         let filteredBooks = [];
-        let currentView = 'list';
-        let currentFilter = 'kindle'; // 'kindle' or 'koreader'
+        let epubBook = null;
+        let epubRendition = null;
+        let readerCurrentBookId = null;
+        let readerDarkTheme = true;
+        let activeProfileId = 1; // Default profile id that always exists
+
+        let currentView = 'gallery';
+        let currentFilter = 'kindle';
+        let currentFormatFilter = 'all';
+        let sortOrder = 'desc'; // 'asc' or 'desc'
         let selectedIds = new Set();
         let lastConnectedState = false;
         let maintenanceMode = false;
-
         const KINDLE_FORMATS = ['.epub', '.mobi', '.azw3', '.azw', '.kfx'];
+        let booksRendered = 0; // Contagem de livros renderizados
+        const BOOKS_PER_PAGE = 50; // Quantos livros carregar por scroll
+        let observer = null;
 
+        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
-            loadBooks();
+            initTheme();
+            renderSkeleton(); // Show skeleton immediately
+            loadBooks(); // Load books directly since profiles are disabled
             checkDeviceStatus(true);
-            setInterval(() => checkDeviceStatus(true), 3000); // Poll every 3 seconds
+            setInterval(() => checkDeviceStatus(true), 3000);
+
+            // Sync manual input with hidden input
+            document.getElementById('manualKindlePathInput').value = document.getElementById('kindlePath').value;
+
+            setupObserver();
+            setupSSE();
         });
 
-        function toggleMaintenanceMode() {
-            maintenanceMode = !maintenanceMode;
-            const btn = document.getElementById('btnMaintenance');
-            if (maintenanceMode) {
-                btn.classList.add('bg-red-900/30', 'text-red-400', 'border-red-500/50');
-                btn.classList.remove('bg-darkbg', 'text-gray-500', 'border-darkborder');
-                showToast("Modo de Manutenção Ativado! Cuidado com exclusões.", "warning");
-            } else {
-                btn.classList.add('bg-darkbg', 'text-gray-500', 'border-darkborder');
-                btn.classList.remove('bg-red-900/30', 'text-red-400', 'border-red-500/50');
-                showToast("Modo de Manutenção Desativado.", "info");
+        function initTheme() {
+            const savedTheme = localStorage.getItem('calibreTheme') || 'dark';
+            document.getElementById('themeSelector').value = savedTheme;
+            applyTheme(savedTheme);
+        }
+
+        function applyTheme(themeName) {
+            localStorage.setItem('calibreTheme', themeName);
+            document.documentElement.setAttribute('data-theme', themeName);
+        }
+
+        function setupSSE() {
+            const evtSource = new EventSource('/api/events');
+            evtSource.onmessage = function (event) {
+                if (event.data === 'new_book' || event.data === 'refresh') {
+                    console.log("Novo e-book detectado pelo servidor, recarregando...");
+                    loadBooks();
+                    showToast("Novo livro adicionado à biblioteca!", "success");
+                }
+            };
+            evtSource.onerror = function (err) {
+                console.error("SSE Connection Error:", err);
+            };
+        }
+
+        function setupObserver() {
+            const options = {
+                root: null,
+                rootMargin: '100px',
+                threshold: 0.1
+            };
+
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        renderMoreBooks();
+                    }
+                });
+            }, options);
+        }
+
+        // --- Core UI Functions ---
+
+        function renderSkeleton() {
+            const grid = document.getElementById('galleryGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                grid.innerHTML += `
+                <div class="bg-darkcard border border-darkborder rounded-lg p-3 animate-pulse">
+                    <div class="w-full aspect-[2/3] bg-gray-800 rounded mb-3"></div>
+                    <div class="h-4 bg-gray-800 rounded w-3/4 mb-2"></div>
+                    <div class="h-3 bg-gray-800 rounded w-1/2"></div>
+                </div>`;
             }
-            updateSelectionUI();
+        }
+
+        function getFormatBadgeColor(ext) {
+            const e = ext.toLowerCase();
+            if (e === '.pdf') return 'bg-red-500/10 text-red-400 border-red-500/20';
+            if (e === '.epub') return 'bg-green-500/10 text-green-400 border-green-500/20';
+            if (e === '.mobi' || e === '.azw3') return 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+            if (['.cbz', '.cbr'].includes(e)) return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+            return 'bg-gray-700/30 text-gray-400 border-gray-600/30';
+        }
+
+        function toggleSortOrder() {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            document.getElementById('sortOrderIcon').innerText = sortOrder === 'asc' ? '⬆️' : '⬇️';
+            applyFilters();
+        }
+
+        function sortBooksArray(booksArray) {
+            const sortBy = document.getElementById('sortOption').value;
+
+            return booksArray.sort((a, b) => {
+                let valA = a[sortBy];
+                let valB = b[sortBy];
+
+                // Tratar added_date que pode ser null, fallback pra string vazia
+                if (sortBy === 'added_date') {
+                    valA = valA || "";
+                    valB = valB || "";
+                } else {
+                    valA = (valA || "").toString().toLowerCase();
+                    valB = (valB || "").toString().toLowerCase();
+                }
+
+                let comparison = 0;
+                if (valA < valB) {
+                    comparison = -1;
+                } else if (valA > valB) {
+                    comparison = 1;
+                }
+
+                return sortOrder === 'asc' ? comparison : -comparison;
+            });
+        }
+
+        // --- Logic ---
+
+        async function loadBooks() {
+            try {
+                const response = await fetch('/api/books');
+                allBooks = await response.json();
+                applyFilters(); // Render comes from here
+            } catch (error) {
+                showToast("Erro ao carregar biblioteca", "error");
+            }
+        }
+
+        function renderBooks() {
+            const tbody = document.getElementById('booksTable');
+            const grid = document.getElementById('galleryGrid');
+            const emptyState = document.getElementById('emptyState');
+            const listView = document.getElementById('listViewContainer');
+            const galleryView = document.getElementById('galleryViewContainer');
+
+            // Toggle Containers
+            if (filteredBooks.length === 0) {
+                listView.classList.add('hidden');
+                galleryView.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+                if (currentView === 'list') {
+                    listView.classList.remove('hidden');
+                    galleryView.classList.add('hidden');
+                } else {
+                    listView.classList.add('hidden');
+                    galleryView.classList.remove('hidden');
+                }
+            }
+
+            // Render content
+            // Setup initial render state
+            booksRendered = 0;
+            tbody.innerHTML = '';
+            grid.innerHTML = '';
+
+            // Render first batch
+            renderMoreBooks();
+        }
+
+        function renderMoreBooks() {
+            if (booksRendered >= filteredBooks.length) return;
+
+            const tbody = document.getElementById('booksTable');
+            const grid = document.getElementById('galleryGrid');
+            const listObserverTarget = document.getElementById('listObserverTarget');
+            const gridObserverTarget = document.getElementById('gridObserverTarget');
+
+            // Pega o spinner correto baseado na view atual
+            const loadingSpinner = currentView === 'list'
+                ? document.getElementById('loadingSpinnerList')
+                : document.getElementById('loadingSpinnerGrid');
+
+            // Unobserve before rendering changes to prevent multiple triggers
+            if (observer && listObserverTarget) observer.unobserve(listObserverTarget);
+            if (observer && gridObserverTarget) observer.unobserve(gridObserverTarget);
+
+            if (loadingSpinner) loadingSpinner.classList.remove('hidden');
+
+            const endIndex = Math.min(booksRendered + BOOKS_PER_PAGE, filteredBooks.length);
+            const batch = filteredBooks.slice(booksRendered, endIndex);
+
+            batch.forEach(book => {
+                const isSelected = selectedIds.has(book.id);
+                const formatClass = getFormatBadgeColor(book.file_type);
+                const formatLabel = book.file_type.replace('.', '').toUpperCase();
+                const coverUrl = book.cover_path || `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='150' fill='%23222'><text x='50%' y='50%' fill='%23555' text-anchor='middle' dy='.3em'>SEM CAPA</text></svg>`;
+
+                // Gallery Card
+                const card = document.createElement('div');
+                card.id = `book-card-${book.id}`;
+                card.className = `group relative bg-darkcard border ${isSelected ? 'border-kindle ring-1 ring-kindle' : 'border-darkborder hover:border-gray-500'} rounded-xl overflow-hidden transition-all duration-200 hover:-translate-y-1 shadow-lg hover:shadow-xl cursor-pointer`;
+                card.onclick = () => toggleSelection(book.id);
+                card.innerHTML = `
+                    <div class="book-cover-container w-full bg-[#111] relative">
+                        <img src="${coverUrl}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy">
+                        
+                        <!-- Overlay Gradients -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60"></div>
+                        
+                        <!-- Format Badge -->
+                        <div class="absolute top-2 left-2 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${formatClass} backdrop-blur-sm">
+                            ${formatLabel}
+                        </div>
+
+                        <!-- Checkbox (Visual) -->
+                        <div class="selection-indicator absolute top-2 right-2 w-6 h-6 rounded-full border-2 ${isSelected ? 'bg-kindle border-kindle' : 'border-white/30 bg-black/40'} flex items-center justify-center transition-all">
+                            ${isSelected ? '<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+                        </div>
+
+                        <!-- Hover Actions (Maintenance) -->
+                        ${maintenanceMode ? `
+                        <button onclick="openEditModal(${book.id}, event)" class="absolute bottom-2 left-2 p-1.5 bg-black/60 hover:bg-blue-600 text-white rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>` : `
+                        ${book.file_type.toLowerCase() === '.epub' ? `<button onclick="openReader(${book.id}, '${book.title.replace(/'/g, "\\'")}', event)" class="absolute bottom-2 left-2 p-1.5 bg-kindle/80 hover:bg-kindle text-white rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity" title="Ler agora"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></button>` : ''}
+                        `}
+                    </div>
+                    <div class="p-3">
+                        ${book.series ? `<p class="text-[10px] font-bold text-kindle/80 uppercase tracking-wider mb-0.5">${book.series}${book.volume ? ' - Vol. ' + book.volume : ''}</p>` : ''}
+                        <h3 class="text-sm font-semibold text-gray-200 line-clamp-2 leading-snug mb-1" title="${book.title}">${book.title}</h3>
+                        <p class="text-xs text-gray-500 truncate">${book.author}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+
+                // List Row
+                const tr = document.createElement('tr');
+                tr.id = `book-row-${book.id}`;
+                tr.className = `border-b border-darkborder transition-colors cursor-pointer ${isSelected ? 'bg-kindle/5 hover:bg-kindle/10' : 'hover:bg-[#222]'}`;
+                tr.onclick = () => toggleSelection(book.id);
+                tr.innerHTML = `
+                    <td class="py-3 px-6 text-center">
+                         <div class="selection-indicator w-5 h-5 rounded border ${isSelected ? 'bg-kindle border-kindle' : 'border-gray-600 bg-transparent'} flex items-center justify-center mx-auto">
+                            ${isSelected ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+                         </div>
+                    </td>
+                    <td class="py-2 px-6">
+                        <img src="${coverUrl}" class="w-8 h-12 object-cover rounded shadow-sm">
+                    </td>
+                    <td class="py-3 px-6">
+                        <p class="font-medium text-gray-200 truncate max-w-xs">${book.title}</p>
+                        ${book.series ? `<p class="text-[10px] font-bold text-kindle/70 uppercase tracking-wider mt-0.5">${book.series}${book.volume ? ' - Vol. ' + book.volume : ''}</p>` : ''}
+                    </td>
+                    <td class="py-3 px-6 text-gray-400">${book.author}</td>
+                    <td class="py-3 px-6 text-center">
+                        <span class="px-2 py-1 rounded text-[10px] font-bold uppercase border ${formatClass}">${formatLabel}</span>
+                    </td>
+                    <td class="py-3 px-6 text-right">
+                         ${maintenanceMode ?
+                        `<button onclick="openEditModal(${book.id}, event)" class="text-gray-500 hover:text-white mr-3">Editar</button>` :
+                        `${book.file_type.toLowerCase() === '.epub' ? `<button onclick="openReader(${book.id}, '${book.title.replace(/'/g, "\\'")}', event)" class="text-kindle hover:text-white font-medium text-xs mr-3">Ler</button>` : ''}
+                        <button onclick="sendToKindle(${book.id}, this, event)" class="text-kindle hover:text-white font-medium text-xs">Enviar</button>`
+                    }
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            booksRendered = endIndex;
+
+            // Re-observe if there's more to load
+            if (booksRendered < filteredBooks.length) {
+                if (observer && listObserverTarget && currentView === 'list') {
+                    console.log('Observing list target');
+                    observer.observe(listObserverTarget);
+                } else if (observer && gridObserverTarget && currentView !== 'list') {
+                    console.log('Observing grid target');
+                    observer.observe(gridObserverTarget);
+                }
+            } else {
+                console.log('Finished loading all books');
+            }
+            if (loadingSpinner) loadingSpinner.classList.add('hidden');
+        }
+
+        // --- Selection & Action Bar ---
+        function toggleSelection(id) {
+            if (selectedIds.has(id)) selectedIds.delete(id);
+            else selectedIds.add(id);
+            updateSelectionVisuals(id);
+            updateActionBar();
+        }
+
+        function toggleSelectAll() {
+            const allSelected = selectedIds.size === filteredBooks.length;
+            if (allSelected) {
+                selectedIds.clear();
+            } else {
+                filteredBooks.forEach(b => selectedIds.add(b.id));
+            }
+            updateActionBar();
+            filteredBooks.forEach(b => updateSelectionVisuals(b.id));
+        }
+
+        function clearSelection() {
+            const idsToClear = Array.from(selectedIds);
+            selectedIds.clear();
+            updateActionBar();
+            idsToClear.forEach(id => updateSelectionVisuals(id));
+        }
+
+        function updateSelectionVisuals(id) {
+            const isSelected = selectedIds.has(id);
+            const svgIcon = '<svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+
+            // Update Card
+            const card = document.getElementById(`book-card-${id}`);
+            if (card) {
+                if (isSelected) {
+                    card.classList.add('border-kindle', 'ring-1', 'ring-kindle');
+                    card.classList.remove('border-darkborder', 'hover:border-gray-500');
+                    const checkbox = card.querySelector('.selection-indicator');
+                    if (checkbox) {
+                        checkbox.classList.add('bg-kindle', 'border-kindle');
+                        checkbox.classList.remove('border-white/30', 'bg-black/40');
+                        checkbox.innerHTML = svgIcon;
+                    }
+                } else {
+                    card.classList.remove('border-kindle', 'ring-1', 'ring-kindle');
+                    card.classList.add('border-darkborder', 'hover:border-gray-500');
+                    const checkbox = card.querySelector('.selection-indicator');
+                    if (checkbox) {
+                        checkbox.classList.remove('bg-kindle', 'border-kindle');
+                        checkbox.classList.add('border-white/30', 'bg-black/40');
+                        checkbox.innerHTML = '';
+                    }
+                }
+            }
+
+            // Update Row
+            const row = document.getElementById(`book-row-${id}`);
+            if (row) {
+                if (isSelected) {
+                    row.classList.add('bg-kindle/5', 'hover:bg-kindle/10');
+                    row.classList.remove('hover:bg-[#222]');
+                    const checkbox = row.querySelector('.selection-indicator');
+                    if (checkbox) {
+                        checkbox.classList.add('bg-kindle', 'border-kindle');
+                        checkbox.classList.remove('border-gray-600', 'bg-transparent');
+                        checkbox.innerHTML = svgIcon;
+                    }
+                } else {
+                    row.classList.remove('bg-kindle/5', 'hover:bg-kindle/10');
+                    row.classList.add('hover:bg-[#222]');
+                    const checkbox = row.querySelector('.selection-indicator');
+                    if (checkbox) {
+                        checkbox.classList.remove('bg-kindle', 'border-kindle');
+                        checkbox.classList.add('border-gray-600', 'bg-transparent');
+                        checkbox.innerHTML = '';
+                    }
+                }
+            }
+        }
+
+        function updateActionBar() {
+            const bar = document.getElementById('selectionBar');
+            const count = selectedIds.size;
+            document.getElementById('selectedCountBadge').innerText = count;
+
+            const btnSend = document.getElementById('btnActionBarSend');
+            const btnConfirm = document.getElementById('btnConfirmDelete');
+
+            // Action Button Context
+            if (maintenanceMode) {
+                btnSend.innerHTML = `<span>Excluir Selecionados</span>`;
+                btnSend.className = "flex items-center gap-2 px-5 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl shadow-lg shadow-red-900/20 transition-all";
+                btnSend.onclick = openDeleteModal;
+            } else {
+                btnSend.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg><span>Enviar para Dispositivo</span>`;
+                btnSend.className = "flex items-center gap-2 px-5 py-2 bg-kindle hover:bg-kindlehover text-white font-semibold rounded-xl shadow-lg shadow-kindle/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed";
+                btnSend.onclick = sendSelectedBatch;
+                btnSend.disabled = !lastConnectedState;
+            }
+
+            if (count > 0) {
+                bar.classList.remove('translate-y-32');
+            } else {
+                bar.classList.add('translate-y-32');
+            }
+        }
+
+        // --- Filters & View ---
+        function applyFilters() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+
+            if (currentFilter === 'kindle') {
+                filteredBooks = allBooks.filter(b => KINDLE_FORMATS.includes(b.file_type.toLowerCase()));
+            } else {
+                filteredBooks = [...allBooks];
+            }
+
+            if (currentFormatFilter !== 'all') {
+                filteredBooks = filteredBooks.filter(b => b.file_type.toLowerCase() === currentFormatFilter);
+            }
+
+            if (term) {
+                filteredBooks = filteredBooks.filter(b =>
+                    b.title.toLowerCase().includes(term) ||
+                    b.author.toLowerCase().includes(term)
+                );
+            }
+
+            filteredBooks = sortBooksArray(filteredBooks);
             renderBooks();
         }
 
-        async function checkDeviceStatus(silent = false) {
-            const btn = document.getElementById('btnAutoDetect');
-            if (btn && !silent) btn.classList.add('animate-spin-slow');
+        function setFormatFilter(format) {
+            currentFormatFilter = format;
 
-            try {
-                const response = await fetch('/api/detect-device');
-                const data = await response.json();
-
-                if (data.connected && !lastConnectedState) {
-                    // Just connected
-                    lastConnectedState = true;
-                    updateSelectionUI(); // Habilita o botao
-                    if (data.has_koreader) {
-                        // Prompt user
-                        document.getElementById('detectedKOReaderPath').value = data.koreader_path;
-                        document.getElementById('detectedKindlePath').value = data.kindle_path;
-                        openKOReaderDetectModal();
-                    } else {
-                        // Standard Kindle
-                        document.getElementById('kindlePath').value = data.kindle_path;
-                        if (!silent) showToast("Kindle detectado automaticamente!", "success");
-                    }
-                } else if (!data.connected && lastConnectedState) {
-                    // Just disconnected
-                    lastConnectedState = false;
-                    updateSelectionUI(); // Desabilita o botao
-                    showToast("Kindle desconectado.", "info");
-                } else if (data.connected && !silent) {
-                    // Manual check while already connected
-                    if (data.has_koreader) {
-                        document.getElementById('detectedKOReaderPath').value = data.koreader_path;
-                        document.getElementById('detectedKindlePath').value = data.kindle_path;
-                        openKOReaderDetectModal();
-                    } else {
-                        document.getElementById('kindlePath').value = data.kindle_path;
-                        showToast("Kindle sincronizado.", "success");
-                    }
+            // Update UI
+            const buttons = document.querySelectorAll('.format-btn');
+            buttons.forEach(btn => {
+                if (btn.dataset.format === format) {
+                    btn.className = "format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all bg-[#2a2a2a] text-white";
+                } else {
+                    btn.className = "format-btn px-3 py-1.5 rounded-md text-xs font-semibold transition-all text-gray-500 hover:text-white";
                 }
+            });
 
-                if (!data.connected && !silent) {
-                    showToast("Nenhum Kindle encontrado no USB.", "error");
-                }
-
-            } catch (e) {
-                if (!silent) showToast("Erro ao tentar detectar o dispositivo.", "error");
-            } finally {
-                if (btn && !silent) btn.classList.remove('animate-spin-slow');
-            }
+            applyFilters();
         }
 
-        function autoDetectKindle() {
-            // Manual trigger
-            checkDeviceStatus(false);
-        }
-
-        function openKOReaderDetectModal() {
-            const modal = document.getElementById('koreaderDetectModal');
-            const content = document.getElementById('koreaderDetectContent');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeKOReaderDetectModal() {
-            const modal = document.getElementById('koreaderDetectModal');
-            const content = document.getElementById('koreaderDetectContent');
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        function selectAutoDetectMode(mode) {
-            closeKOReaderDetectModal();
-            const kindlePath = document.getElementById('detectedKindlePath').value;
-            const koPath = document.getElementById('detectedKOReaderPath').value;
-
-            // Bypass confirm prompts by setting variables directly then calling UI update
+        function setDeviceFilter(mode) {
             currentFilter = mode;
-            const btnKindle = document.getElementById('btnKindleFilter');
-            const btnKOReader = document.getElementById('btnKOReaderFilter');
-            let pathInput = document.getElementById('kindlePath');
+            const btnK = document.getElementById('btnKindleFilter');
+            const btnKO = document.getElementById('btnKOReaderFilter');
+            const btnPDF = document.getElementById('filterBtnPDF');
+            const btnCBZ = document.getElementById('filterBtnCBZ');
+
+            const kPath = document.getElementById('detectedKindlePath').value;
+            const koPath = document.getElementById('detectedKOReaderPath').value;
+            const activePathInput = document.getElementById('kindlePath');
 
             if (mode === 'kindle') {
-                btnKindle.classList.replace('text-gray-500', 'text-white');
-                btnKindle.classList.add('bg-[#2a2a2a]');
-                btnKOReader.classList.remove('text-white', 'bg-[#2a2a2a]');
-                btnKOReader.classList.add('text-gray-500');
-                pathInput.value = kindlePath;
-                showToast("Modo Kindle ativado!", "success");
-            } else {
-                btnKOReader.classList.replace('text-gray-500', 'text-white');
-                btnKOReader.classList.add('bg-[#2a2a2a]');
-                btnKindle.classList.remove('text-white', 'bg-[#2a2a2a]');
-                btnKindle.classList.add('text-gray-500');
-                pathInput.value = koPath || kindlePath;
-                showToast("Modo KOReader ativado!", "success");
-            }
+                btnK.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all bg-[#2a2a2a] text-white";
+                btnKO.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-gray-500 hover:text-white";
 
+                if (btnPDF) btnPDF.classList.add('hidden');
+                if (btnCBZ) btnCBZ.classList.add('hidden');
+
+                // Auto restore path if needed
+                if (kPath) activePathInput.value = kPath;
+
+                // Keep UI logical: if format is hidden, return to 'all'
+                if (currentFormatFilter === '.pdf' || currentFormatFilter === '.cbz') {
+                    setFormatFilter('all');
+                }
+            } else {
+                btnKO.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all bg-[#2a2a2a] text-white";
+                btnK.className = "px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all text-gray-500 hover:text-white";
+
+                if (btnPDF) btnPDF.classList.remove('hidden');
+                if (btnCBZ) btnCBZ.classList.remove('hidden');
+
+                // Bind KOReader path
+                if (koPath) activePathInput.value = koPath;
+            }
             applyFilters();
         }
 
@@ -554,754 +1297,609 @@
             currentView = mode;
             const btnList = document.getElementById('btnListView');
             const btnGallery = document.getElementById('btnGalleryView');
-            const listContainer = document.getElementById('listViewContainer');
-            const galleryContainer = document.getElementById('galleryViewContainer');
 
             if (mode === 'list') {
-                btnList.classList.replace('text-gray-500', 'text-white');
-                btnList.classList.add('bg-[#2a2a2a]');
-                btnGallery.classList.replace('text-white', 'text-gray-500');
-                btnGallery.classList.remove('bg-[#2a2a2a]');
-
-                listContainer.classList.remove('hidden');
-                galleryContainer.classList.add('hidden');
+                btnList.className = "p-1.5 rounded-md bg-[#2a2a2a] text-white transition-colors";
+                btnGallery.className = "p-1.5 rounded-md text-gray-500 hover:text-white transition-colors";
             } else {
-                btnGallery.classList.replace('text-gray-500', 'text-white');
-                btnGallery.classList.add('bg-[#2a2a2a]');
-                btnList.classList.replace('text-white', 'text-gray-500');
-                btnList.classList.remove('bg-[#2a2a2a]');
-
-                galleryContainer.classList.remove('hidden');
-                listContainer.classList.add('hidden');
+                btnGallery.className = "p-1.5 rounded-md bg-[#2a2a2a] text-white transition-colors";
+                btnList.className = "p-1.5 rounded-md text-gray-500 hover:text-white transition-colors";
             }
-        }
-
-        function toggleSelection(bookId) {
-            if (selectedIds.has(bookId)) {
-                selectedIds.delete(bookId);
-            } else {
-                selectedIds.add(bookId);
-            }
-            updateSelectionUI();
-        }
-
-        function clearSelection() {
-            selectedIds.clear();
-            updateSelectionUI();
-        }
-
-        function updateSelectionUI() {
-            const count = selectedIds.size;
-            document.getElementById('selectedCount').textContent = count;
-            document.getElementById('btnSendBatchCount').textContent = count > 0 ? ` (${count})` : '';
-
-            const widget = document.getElementById('selectionWidget');
-            const btnSendBatch = document.getElementById('btnSendBatch');
-
-            if (count > 0) {
-                widget.classList.remove('hidden');
-                document.getElementById('btnClear').classList.remove('hidden');
-
-                if (maintenanceMode) {
-                    btnSendBatch.disabled = false;
-                    btnSendBatch.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Excluir <span id="btnSendBatchCount" class="font-bold"> (${count})</span>`;
-                    btnSendBatch.classList.remove('bg-kindle', 'hover:bg-blue-500');
-                    btnSendBatch.classList.add('bg-red-600', 'hover:bg-red-500');
-                    btnSendBatch.onclick = openDeleteModal;
-                } else {
-                    btnSendBatch.disabled = !lastConnectedState;
-                    btnSendBatch.innerHTML = `<svg class="animate-bounce w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg> Enviar <span id="btnSendBatchCount" class="font-bold"> (${count})</span>`;
-                    btnSendBatch.classList.add('bg-kindle', 'hover:bg-blue-500');
-                    btnSendBatch.classList.remove('bg-red-600', 'hover:bg-red-500');
-                    btnSendBatch.onclick = sendSelectedBatch;
-                }
-            } else {
-                widget.classList.add('hidden');
-                btnSendBatch.disabled = true;
-                document.getElementById('btnClear').classList.add('hidden');
-            }
-
-            // Update main views visually
-            allBooks.forEach(book => {
-                const tr = document.getElementById(`row-${book.id}`);
-                const card = document.getElementById(`card-${book.id}`);
-                const isSelected = selectedIds.has(book.id);
-
-                if (tr) {
-                    const cb = document.getElementById(`cb-${book.id}`);
-                    cb.checked = isSelected;
-                    if (isSelected) tr.classList.add('selected-row');
-                    else tr.classList.remove('selected-row');
-                }
-                if (card) {
-                    if (isSelected) {
-                        card.classList.add('selected-card', 'ring-2', 'ring-kindle');
-                        document.getElementById(`check-badge-${book.id}`)?.classList.remove('hidden');
-                    } else {
-                        card.classList.remove('selected-card', 'ring-2', 'ring-kindle');
-                        document.getElementById(`check-badge-${book.id}`)?.classList.add('hidden');
-                    }
-                }
-            });
-
-            // Rebuild sidebar list
-            renderSidebarList();
-        }
-
-        function renderSidebarList() {
-            const listContainer = document.getElementById('selectedList');
-            listContainer.innerHTML = '';
-
-            if (selectedIds.size === 0) {
-                listContainer.innerHTML = '<div class="text-sm text-gray-500 text-center italic mt-10">Nenhum livro selecionado. Clique em um livro para adicioná-lo à fila.</div>';
-                return;
-            }
-
-            allBooks.forEach(book => {
-                if (selectedIds.has(book.id)) {
-                    const item = document.createElement('div');
-                    item.id = `sidebar-item-${book.id}`;
-                    item.className = "flex justify-between items-center bg-[#2a2a2a] p-2 rounded border border-darkborder transition-colors duration-300";
-                    const format = book.file_type.replace('.', '').toUpperCase();
-                    item.innerHTML = `
-                        <div class="flex flex-col flex-1 truncate mr-2">
-                            <span class="text-xs font-semibold text-gray-200 truncate" title="${book.title}">${book.title}</span>
-                            <span class="text-[10px] text-kindle font-bold tracking-wider">${format}</span>
-                        </div>
-                        <button onclick="toggleSelection(${book.id}); event.stopPropagation();" class="text-gray-400 hover:text-red-400 p-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    `;
-                    listContainer.appendChild(item);
-                }
-            });
-        }
-
-        async function setDeviceFilter(mode) {
-            const previousFilter = currentFilter;
-            currentFilter = mode;
-            const btnKindle = document.getElementById('btnKindleFilter');
-            const btnKOReader = document.getElementById('btnKOReaderFilter');
-            const kindlePathInput = document.getElementById('kindlePath');
-
-            if (mode === 'kindle') {
-                btnKindle.classList.replace('text-gray-500', 'text-white');
-                btnKindle.classList.add('bg-[#2a2a2a]');
-                btnKOReader.classList.remove('text-white', 'bg-[#2a2a2a]');
-                btnKOReader.classList.add('text-gray-500');
-
-                // Keep only kindle formats
-                filteredBooks = allBooks.filter(b => KINDLE_FORMATS.includes(b.file_type.toLowerCase()));
-
-                // Check if returning from KOReader to Kindle, offer to reset path
-                if (previousFilter === 'koreader' && !kindlePathInput.value.endsWith('documents')) {
-                    if (confirm("Deseja voltar a pasta de destino para 'documents' (padrão do Kindle)?")) {
-                        autoDetectKindle(true); // tenta achar o kindle de novo
-                    }
-                }
-            } else {
-                btnKOReader.classList.replace('text-gray-500', 'text-white');
-                btnKOReader.classList.add('bg-[#2a2a2a]');
-                btnKindle.classList.remove('text-white', 'bg-[#2a2a2a]');
-                btnKindle.classList.add('text-gray-500');
-
-                // Show everything
-                filteredBooks = [...allBooks];
-
-                // Prompt for KOReader folder
-                if (previousFilter === 'kindle') {
-                    if (confirm("Você gostaria de selecionar a pasta destino do seu KOReader?")) {
-                        const loadingToast = document.getElementById('toast');
-                        showToast("Aguardando seleção de pasta do Windows...", "info");
-                        btnKOReader.classList.add('animate-pulse');
-
-                        try {
-                            const res = await fetch('/api/pick-folder');
-                            if (res.ok) {
-                                const data = await res.json();
-                                kindlePathInput.value = data.path;
-                                showToast("Pasta do KOReader configurada!", "success");
-                            } else {
-                                // Most likely the user closed the window
-                                showToast("Nenhuma pasta selecionada.", "error");
-                            }
-                        } catch (e) {
-                            showToast("Erro ao abrir seletor de pastas.", "error");
-                        } finally {
-                            btnKOReader.classList.remove('animate-pulse');
-                        }
-                    }
-                }
-            }
-
-            // After setting paths and buttons, apply filters
             applyFilters();
         }
 
-        function applyFilters() {
-            const searchTerm = document.getElementById('searchInput');
-            const term = searchTerm ? searchTerm.value.toLowerCase() : '';
+        function toggleMaintenanceMode() {
+            maintenanceMode = !maintenanceMode;
+            const btn = document.getElementById('btnMaintenance');
+            const header = document.getElementById('mainHeader');
 
-            // First apply device type filter
-            if (currentFilter === 'kindle') {
-                filteredBooks = allBooks.filter(b => KINDLE_FORMATS.includes(b.file_type.toLowerCase()));
+            if (maintenanceMode) {
+                btn.classList.add('bg-orange-500/10', 'text-orange-400', 'border', 'border-orange-500/20');
+                btn.classList.remove('text-gray-500', 'border-transparent');
+
+                // Add header glow
+                header.classList.add('border-b-2', 'border-orange-500', 'shadow-orange-500/10', 'bg-orange-900/10');
+                header.classList.remove('border-darkborder');
+
+                showToast("Modo de Edição Ativado", "warning", true);
             } else {
-                filteredBooks = [...allBooks];
+                btn.classList.remove('bg-orange-500/10', 'text-orange-400', 'border', 'border-orange-500/20');
+                btn.classList.add('text-gray-500', 'border-transparent');
+
+                // Remove header glow
+                header.classList.remove('border-b-2', 'border-orange-500', 'shadow-orange-500/10', 'bg-orange-900/10');
+                header.classList.add('border-darkborder');
+
+                showToast("Modo de Edição Desativado", "info", false);
             }
-
-            // Then apply text search filter
-            if (term.trim() !== '') {
-                filteredBooks = filteredBooks.filter(b =>
-                    b.title.toLowerCase().includes(term) ||
-                    b.author.toLowerCase().includes(term)
-                );
-            }
-
-            // Clean selection if a book gets hidden
-            const validIds = new Set(filteredBooks.map(b => b.id));
-            const newSelection = new Set();
-            selectedIds.forEach(id => {
-                if (validIds.has(id)) newSelection.add(id);
-            });
-            selectedIds = newSelection;
-
+            updateActionBar();
             renderBooks();
-            updateSelectionUI();
         }
 
-        async function loadBooks() {
-            try {
-                const response = await fetch('/api/books');
-                allBooks = await response.json();
-
-                // Apply Initial Filter
-                setDeviceFilter(currentFilter);
-
-            } catch (error) {
-                document.getElementById('tableLoadingState').innerHTML = `<span class="text-red-400">Erro ao carregar livros. Servidor offline?</span>`;
-                console.error(error);
-            }
-        }
-
-        function renderBooks() {
-            const tbody = document.getElementById('booksTable');
-            const grid = document.getElementById('galleryGrid');
-            const galleryEmpty = document.getElementById('galleryEmptyState');
-
-            tbody.innerHTML = '';
-            grid.innerHTML = '';
-
-            if (filteredBooks.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="py-12 text-center text-gray-500">
-                    Nenhum documento encontrado para este filtro.
-                </td></tr>`;
-                galleryEmpty.classList.remove('hidden');
-                return;
-            }
-
-            galleryEmpty.classList.add('hidden');
-
-            filteredBooks.forEach((book) => {
-                const defaultCover = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="150" fill="#333"><rect width="100" height="150" fill="#222"/><text x="50%" y="50%" fill="#666" font-family="sans-serif" font-size="12" text-anchor="middle" alignment-baseline="middle">Sem Capa</text></svg>');
-                const coverUrl = book.cover_path || defaultCover;
-                const formatLabel = book.file_type.replace('.', '').toUpperCase();
-                const isSelected = selectedIds.has(book.id);
-
-                // === RENDERIZAR TABELA ===
-                const tr = document.createElement('tr');
-                tr.id = `row-${book.id}`;
-                tr.className = `hover:bg-[#2a2a2a] transition-colors cursor-pointer group ${isSelected ? 'selected-row' : ''}`;
-                tr.onclick = () => toggleSelection(book.id);
-
-                tr.innerHTML = `
-                    <td class="py-2 px-6 text-center w-12" onclick="event.stopPropagation(); toggleSelection(${book.id});">
-                        <input type="checkbox" id="cb-${book.id}" class="w-4 h-4 text-kindle bg-darkbg border-darkborder rounded focus:ring-kindle focus:ring-2" ${isSelected ? 'checked' : ''} style="cursor: pointer;">
-                    </td>
-                    <td class="py-2 px-6 text-center">
-                        <img src="${coverUrl}" alt="Capa" class="w-10 h-14 book-cover rounded inline-block">
-                    </td>
-                    <td class="py-3 px-6 text-gray-200 font-medium truncate max-w-[200px]" title="${book.title}">${book.title}</td>
-                    <td class="py-3 px-6 text-gray-400 truncate max-w-[150px]" title="${book.author}">${book.author}</td>
-                    <td class="py-3 px-6 text-center">
-                        <span class="text-[10px] font-bold px-2 py-1 bg-darkbg border ${book.file_type === '.pdf' ? 'border-red-500/50 text-red-400' : 'border-darkborder text-gray-400'} rounded tracking-wider">
-                            ${formatLabel}
-                        </span>
-                    </td>
-                    <td class="py-3 px-6 text-right space-x-2">
-                        ${maintenanceMode ? `<button onclick="openEditModal(${book.id}, '${book.title.replace(/'/g, "\\'")}', '${book.author.replace(/'/g, "\\'")}', event)" class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity bg-[#2a2a2a] hover:bg-[#3a3a3a] text-gray-300 text-xs font-semibold py-2 px-3 rounded shadow-sm inline-flex items-center gap-1.5 focus:outline-none">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </button>` : ''}
-                        ${!maintenanceMode ? `<button onclick="sendToKindle(${book.id}, this, event)" class="opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity bg-kindle hover:bg-blue-500 text-white text-xs font-semibold py-2 px-3 rounded shadow-sm inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-kindle focus:ring-offset-2 focus:ring-offset-darkcard">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                            Enviar
-                        </button>` : ''}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-
-                // === RENDERIZAR GALERIA ===
-                const card = document.createElement('div');
-                card.id = `card-${book.id}`;
-                card.className = `bg-darkcard border border-darkborder rounded-lg overflow-hidden flex flex-col group relative transition hover:border-[#444] shadow-lg cursor-pointer ${isSelected ? 'selected-card ring-2 ring-kindle' : 'hover:-translate-y-1'}`;
-                card.onclick = () => toggleSelection(book.id);
-                card.innerHTML = `
-                    <div class="relative pt-[150%] w-full bg-[#111]">
-                        <img src="${coverUrl}" alt="Capa" class="absolute inset-0 w-full h-full object-cover">
-                        <!-- Checkmark Badge -->
-                        <div id="check-badge-${book.id}" class="absolute -top-2 -right-2 ${maintenanceMode ? 'bg-red-500' : 'bg-kindle'} text-white rounded-full p-1 shadow-lg border-2 border-darkcard z-20 ${isSelected ? '' : 'hidden'}">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                        </div>
-                        ${maintenanceMode ? `<button onclick="openEditModal(${book.id}, '${book.title.replace(/'/g, "\\'")}', '${book.author.replace(/'/g, "\\'")}', event)" class="absolute top-2 left-2 bg-black/80 hover:bg-blue-500 text-white p-1.5 rounded-full shadow-lg border border-[#333] z-20 opacity-0 group-hover:opacity-100 transition-all duration-200" title="Editar">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </button>` : ''}
-                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center backdrop-blur-[2px] gap-2">
-                            <!-- Select Overlay Text -->
-                            <span class="bg-black/80 text-white text-xs font-bold py-1.5 px-3 rounded border border-[#444] mb-2">Selecionar</span>
-                            ${!maintenanceMode ? `<button onclick="sendToKindle(${book.id}, this, event)" class="bg-kindle hover:bg-blue-500 text-white font-semibold py-1.5 px-3 rounded shadow text-xs flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                                Enviar
-                            </button>` : ''}
-                        </div>
-                        <div class="absolute bottom-2 right-2 bg-black/80 text-[9px] font-bold px-1.5 py-0.5 rounded ${book.file_type === '.pdf' ? 'text-red-400 border-red-500/50' : 'text-gray-300 border-[#333]'} uppercase tracking-widest border z-10">
-                            ${formatLabel}
-                        </div>
-                    </div>
-                    <div class="p-3 flex flex-col justify-between flex-1 relative z-10 bg-darkcard">
-                        <h3 class="text-sm font-semibold text-gray-200 line-clamp-2 leading-snug mb-1" title="${book.title}">${book.title}</h3>
-                        <p class="text-xs text-gray-500 line-clamp-1" title="${book.author}">${book.author}</p>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        async function sendToKindle(bookId, btn, event) {
-            if (event) event.stopPropagation();
-
-            const originalHTML = btn.innerHTML;
-            const kindlePath = document.getElementById('kindlePath').value.trim();
-
-            if (!kindlePath) {
-                showToast("Caminho do Kindle não configurado!", 'error');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+        // --- Connection Logic ---
+        async function checkDeviceStatus(silent = false) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const badge = document.getElementById('connectionBadge');
 
             try {
-                const response = await fetch('/api/send', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: bookId, kindle_path: kindlePath })
-                });
+                const res = await fetch('/api/detect-device');
+                const data = await res.json();
 
-                if (response.ok) {
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-                    let isSuccess = false;
-                    let lastError = "";
+                if (data.connected) {
+                    const wasAlreadyConnected = lastConnectedState;
+                    lastConnectedState = true;
 
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
+                    statusDot.classList.remove('bg-gray-500', 'animate-pulse');
+                    statusDot.classList.add('bg-green-500');
+                    statusText.innerText = "Kindle Conectado";
+                    badge.classList.add('border-green-500/30', 'bg-green-500/5');
 
-                        const text = decoder.decode(value, { stream: true });
-                        const lines = text.split('\n').filter(l => l.trim().length > 0);
+                    // If it wasn't connected before, prompt or assign paths
+                    if (!wasAlreadyConnected) {
+                        if (data.has_koreader) {
+                            document.getElementById('detectedKOReaderPath').value = data.koreader_path;
+                            document.getElementById('detectedKindlePath').value = data.kindle_path;
+                            openModal('koreaderDetectModal');
+                        } else {
+                            // If just a normal kindle, set the path automatically
+                            document.getElementById('kindlePath').value = data.kindle_path;
+                            setDeviceFilter('kindle');
 
-                        for (const line of lines) {
-                            try {
-                                const data = JSON.parse(line);
-                                if (data.status === 'progress') {
-                                    btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> ${data.progress}%`;
-                                } else if (data.status === 'success') {
-                                    isSuccess = true;
-                                } else if (data.status === 'error') {
-                                    lastError = data.detail;
-                                }
-                            } catch (e) { }
+                            // Apenas exibe a notificação de sincronizado se for a transição (não no carregamento inicial)
+                            if (!silent) showToast("Dispositivo sincronizado!", "success");
                         }
                     }
-
-                    if (isSuccess) {
-                        showToast("E-book enviado com sucesso!", 'success');
-                        btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-                        btn.classList.replace('bg-kindle', 'bg-green-600');
-                        btn.classList.replace('hover:bg-blue-500', 'hover:bg-green-500');
-                    } else {
-                        showToast(lastError || "Erro ao enviar e-book.", 'error');
-                        btn.innerHTML = originalHTML;
-                    }
                 } else {
-                    const data = await response.json();
-                    showToast(data.detail || "Erro ao enviar e-book. Kindle conectado?", 'error');
-                    btn.innerHTML = originalHTML;
+                    lastConnectedState = false;
+                    statusDot.classList.remove('bg-green-500');
+                    statusDot.classList.add('bg-gray-500', 'animate-pulse');
+                    statusText.innerText = "Buscando USB...";
+                    badge.classList.remove('border-green-500/30', 'bg-green-500/5');
                 }
-            } catch (e) {
-                showToast("Erro de conexão. Servidor offline?", 'error');
-                btn.innerHTML = originalHTML;
-            } finally {
-                setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.classList.replace('bg-green-600', 'bg-kindle');
-                    btn.classList.replace('hover:bg-green-500', 'hover:bg-blue-500');
-                    btn.disabled = false;
-                }, 3000);
+                updateActionBar(); // Update button disabled state
+            } catch (e) { console.log(e); }
+        }
+
+        function handleConnectionClick() {
+            if (lastConnectedState) {
+                showToast("Dispositivo conectado em: " + document.getElementById('kindlePath').value, "success");
+            } else {
+                openSettingsModal();
             }
         }
 
-        async function sendSelectedBatch() {
-            if (selectedIds.size === 0) return;
+        // --- Modals & Popups ---
+        function openModal(id) {
+            const m = document.getElementById(id);
+            m.classList.remove('pointer-events-none', 'opacity-0');
+            m.firstElementChild.nextElementSibling.classList.remove('scale-95');
+        }
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            m.classList.add('pointer-events-none', 'opacity-0');
+            m.firstElementChild.nextElementSibling.classList.add('scale-95');
+        }
 
-            const btnSend = document.getElementById('btnSendBatch');
-            const originalHTML = btnSend.innerHTML;
-            const kindlePath = document.getElementById('kindlePath').value.trim();
+        function openSettingsModal() {
+            // Load settings
+            fetch('/api/settings').then(r => r.json()).then(d => {
+                document.getElementById('cfgBooksFolder').value = d.books_folder;
+                document.getElementById('cfgScannerThreads').value = d.scanner_threads || 2;
+            });
+            openModal('settingsModal');
+        }
+        function closeSettingsModal() { closeModal('settingsModal'); }
 
-            if (!lastConnectedState) {
-                showToast("Conecte um dispositivo Kindle e aguarde a detecção.", "error");
-                return;
+        function openEditModal(id, e) {
+            if (e) e.stopPropagation();
+            const book = allBooks.find(b => b.id === id);
+            if (!book) return;
+
+            document.getElementById('editBookId').value = book.id;
+            document.getElementById('editTitle').value = book.title || '';
+            document.getElementById('editAuthor').value = book.author || '';
+            document.getElementById('editSeries').value = book.series || '';
+            document.getElementById('editVolume').value = book.volume !== null ? book.volume : '';
+            document.getElementById('editPublisher').value = book.publisher || '';
+            document.getElementById('editPublishYear').value = book.publish_year || '';
+            document.getElementById('editSynopsis').value = book.synopsis || '';
+            document.getElementById('editCoverUrl').value = '';
+
+            // hide search results
+            document.getElementById('metaSearchResults').innerHTML = '';
+            document.getElementById('metaSearchResults').classList.add('hidden');
+
+            openModal('editModal');
+        }
+        function closeEditModal() { closeModal('editModal'); }
+
+        function openDeleteModal() { openModal('deleteModal'); }
+        function closeDeleteModal() { closeModal('deleteModal'); }
+
+        function closeKOReaderDetectModal() { closeModal('koreaderDetectModal'); }
+
+        function selectAutoDetectMode(mode) {
+            closeKOReaderDetectModal();
+            setDeviceFilter(mode);
+            if (mode === 'koreader') {
+                const p = document.getElementById('detectedKOReaderPath').value;
+                if (p) document.getElementById('kindlePath').value = p;
+                showToast("Modo KOReader Ativado", "success");
+            } else {
+                showToast("Modo Kindle Nativo Ativado", "success");
             }
+        }
 
-            const idsList = Array.from(selectedIds);
-            let successCount = 0;
-            let errorCount = 0;
+        // --- API Actions ---
 
-            btnSend.disabled = true;
+        async function sendSelectedBatch() {
+            if (!lastConnectedState) return showToast("Nenhum dispositivo conectado.", "error");
 
-            for (let i = 0; i < idsList.length; i++) {
-                const currentId = idsList[i];
-                let currentBook = allBooks.find(b => b.id === currentId);
-                const titleStr = currentBook ? currentBook.title.substring(0, 15) + '...' : 'E-book';
+            const btn = document.getElementById('btnActionBarSend');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
 
-                const sidebarItem = document.getElementById(`sidebar-item-${currentId}`);
-                if (sidebarItem) {
-                    sidebarItem.classList.remove('border-darkborder', 'bg-[#2a2a2a]');
-                    sidebarItem.classList.add('border-kindle', 'bg-[#1c3a50]');
-                }
+            const kindlePath = document.getElementById('kindlePath').value;
+            const ids = Array.from(selectedIds);
+            let success = 0;
 
-                btnSend.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> 
-                Enviando (${i + 1}/${idsList.length}): ${titleStr}`;
-
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
                 try {
-                    const response = await fetch('/api/send', {
+                    btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Enviando ${i + 1}/${ids.length}...`;
+                    btn.style.background = `linear-gradient(to right, #16a34a 0%, transparent 0%)`;
+
+                    const res = await fetch('/api/send', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: currentId, kindle_path: kindlePath })
+                        body: JSON.stringify({ id, kindle_path: kindlePath })
                     });
 
-                    if (response.ok) {
-                        const reader = response.body.getReader();
-                        const decoder = new TextDecoder('utf-8');
-                        let isSuccess = false;
+                    if (res.ok && res.body) {
+                        const reader = res.body.getReader();
+                        const decoder = new TextDecoder();
+                        let buffer = "";
 
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) break;
 
-                            const text = decoder.decode(value, { stream: true });
-                            const lines = text.split('\n').filter(l => l.trim().length > 0);
-                            for (const line of lines) {
-                                try {
-                                    const data = JSON.parse(line);
-                                    if (data.status === 'progress') {
-                                        if (sidebarItem) {
-                                            sidebarItem.style.background = `linear-gradient(to right, rgba(0, 168, 225, 0.2) ${data.progress}%, #2a2a2a ${data.progress}%)`;
-                                        }
-                                    } else if (data.status === 'success') {
-                                        isSuccess = true;
-                                    } else if (data.status === 'error') {
-                                        console.error("Erro no envio:", data.detail);
-                                    }
-                                } catch (e) { }
-                            }
-                        }
+                            buffer += decoder.decode(value, { stream: true });
+                            const lines = buffer.split('\n');
+                            buffer = lines.pop(); // Keep incomplete line
 
-                        if (isSuccess) {
-                            successCount++;
-                            if (sidebarItem) {
-                                sidebarItem.style.background = '';
-                                sidebarItem.classList.remove('border-kindle', 'bg-[#1c3a50]', 'bg-[#2a2a2a]');
-                                sidebarItem.classList.add('border-green-500', 'bg-green-900/50');
-                            }
-                        } else {
-                            errorCount++;
-                            if (sidebarItem) {
-                                sidebarItem.style.background = '';
-                                sidebarItem.classList.remove('border-kindle', 'bg-[#1c3a50]', 'bg-[#2a2a2a]');
-                                sidebarItem.classList.add('border-red-500', 'bg-red-900/50');
+                            for (const line of lines) {
+                                if (line.trim()) {
+                                    try {
+                                        const data = JSON.parse(line);
+                                        if (data.status === 'progress' || data.status === 'success') {
+                                            const pct = data.progress || 0;
+                                            btn.style.background = `linear-gradient(to right, #16a34a ${pct}%, #2a2a2a ${pct}%)`;
+                                        }
+                                    } catch (err) { }
+                                }
                             }
                         }
+                        success++;
                     } else {
-                        errorCount++;
-                        if (sidebarItem) {
-                            sidebarItem.classList.remove('border-kindle', 'bg-[#1c3a50]', 'bg-[#2a2a2a]');
-                            sidebarItem.classList.add('border-red-500', 'bg-red-900/50');
-                        }
+                        throw new Error('Falha no envio');
                     }
                 } catch (e) {
-                    errorCount++;
-                    if (sidebarItem) {
-                        sidebarItem.classList.remove('border-kindle', 'bg-[#1c3a50]');
-                        sidebarItem.classList.add('border-red-500', 'bg-red-900/50');
-                    }
-                    console.error("Erro no envio:", e);
+                    console.error(e);
                 }
             }
 
-            if (errorCount === 0) {
-                showToast(`${successCount} e-books enviados com sucesso!`, 'success');
-                btnSend.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Concluído`;
-                btnSend.classList.replace('bg-kindle', 'bg-green-600');
-                btnSend.classList.replace('hover:bg-blue-500', 'hover:bg-green-500');
+            // Cleanup button style
+            btn.style.background = '';
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+
+            if (success === ids.length) {
+                showToast(`${success} livros enviados com sucesso!`, "success");
+                clearSelection();
             } else {
-                showToast(`${successCount} enviados, ${errorCount} erros. Kindle conectado?`, 'error');
-                btnSend.innerHTML = originalHTML;
-            }
-
-            setTimeout(() => {
-                if (errorCount === 0) {
-                    btnSend.innerHTML = originalHTML;
-                    btnSend.classList.replace('bg-green-600', 'bg-kindle');
-                    btnSend.classList.replace('hover:bg-green-500', 'hover:bg-blue-500');
-                }
-                btnSend.disabled = selectedIds.size === 0;
-            }, 3000);
-        }
-
-        function openDeleteModal() {
-            if (selectedIds.size === 0) return;
-            const modal = document.getElementById('deleteModal');
-            const content = document.getElementById('deleteModalContent');
-            const text = document.getElementById('deleteModalText');
-
-            text.innerHTML = `Você está prestes a apagar <b>${selectedIds.size}</b> livro(s). Eles serão movidos para a Lixeira.`;
-            document.getElementById('permanentDeleteCheck').checked = false;
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeDeleteModal() {
-            const modal = document.getElementById('deleteModal');
-            const content = document.getElementById('deleteModalContent');
-
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        async function openSettingsModal() {
-            const modal = document.getElementById('settingsModal');
-            const content = document.getElementById('settingsModalContent');
-
-            try {
-                const res = await fetch('/api/settings');
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById('cfgBooksFolder').value = data.books_folder;
-                }
-            } catch (e) {
-                console.error("Erro ao carregar configurações", e);
-            }
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeSettingsModal() {
-            const modal = document.getElementById('settingsModal');
-            const content = document.getElementById('settingsModalContent');
-
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
-        }
-
-        async function pickFolderFor(inputId) {
-            const input = document.getElementById(inputId);
-            const originalVal = input.value;
-            input.value = "Aguardando seleção do Windows...";
-            try {
-                const res = await fetch('/api/pick-folder');
-                if (res.ok) {
-                    const data = await res.json();
-                    input.value = data.path;
-                } else {
-                    input.value = originalVal;
-                }
-            } catch (e) {
-                input.value = originalVal;
-                showToast("Erro ao abrir seletor de pastas.", "error");
+                showToast(`Enviados: ${success}. Erros: ${ids.length - success}`, "warning");
             }
         }
 
-        async function saveSettings() {
-            const btn = document.getElementById('btnSaveSettings');
-            const spinner = document.getElementById('settingsSpinner');
-            const booksFolder = document.getElementById('cfgBooksFolder').value.trim();
-
-            if (!booksFolder) return showToast("A pasta não pode estar vazia.", "error");
-
-            btn.disabled = true;
-            spinner.classList.remove('hidden');
-
-            try {
-                const res = await fetch('/api/settings', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ books_folder: booksFolder })
-                });
-
-                if (res.ok) {
-                    showToast("Configurações salvas. Atualizando biblioteca...", "success");
-                    closeSettingsModal();
-                    loadBooks();
-                } else {
-                    const data = await res.json();
-                    showToast(data.detail || "Erro ao salvar configurações", "error");
-                }
-            } catch (e) {
-                showToast("Erro ao conectar", "error");
-            } finally {
-                btn.disabled = false;
-                spinner.classList.add('hidden');
-            }
-        }
-
-        async function confirmDeleteBatch() {
-            if (selectedIds.size === 0) return;
-            const btn = document.getElementById('btnConfirmDelete');
-            const isPermanent = document.getElementById('permanentDeleteCheck').checked;
-            const idsList = Array.from(selectedIds);
-
-            btn.disabled = true;
-            btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Excluindo...`;
-
-            try {
-                const response = await fetch('/api/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: idsList, permanent: isPermanent })
-                });
-
-                if (response.ok) {
-                    showToast(`${idsList.length} livro(s) excluído(s) com sucesso.`, 'success');
-                    selectedIds.clear();
-                    closeDeleteModal();
-                    loadBooks(); // Recarrega os livros após exclusão
-                } else {
-                    const data = await response.json();
-                    showToast(data.detail || "Erro ao excluir livros.", 'error');
-                }
-            } catch (e) {
-                showToast("Erro de conexão com o servidor.", 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Excluir';
-            }
-        }
-
-        function openEditModal(id, title, author, event) {
-            if (event) event.stopPropagation();
-
-            document.getElementById('editBookId').value = id;
-            document.getElementById('editTitle').value = title;
-            document.getElementById('editAuthor').value = author;
-
-            const modal = document.getElementById('editModal');
-            const content = document.getElementById('editModalContent');
-
-            modal.classList.remove('hidden');
-            // Timeout to allow display block to process before opacity
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeEditModal() {
-            const modal = document.getElementById('editModal');
-            const content = document.getElementById('editModalContent');
-
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
-
-            setTimeout(() => {
-                modal.classList.add('hidden');
-            }, 300);
+        async function sendToKindle(id, btn, e) {
+            if (e) e.stopPropagation();
+            selectedIds.clear();
+            selectedIds.add(id);
+            await sendSelectedBatch();
         }
 
         async function saveEditBook() {
             const id = document.getElementById('editBookId').value;
-            const title = document.getElementById('editTitle').value.trim();
-            const author = document.getElementById('editAuthor').value.trim();
-
-            if (!title) return showToast("O título não pode ser vazio.", 'error');
+            const title = document.getElementById('editTitle').value;
+            const author = document.getElementById('editAuthor').value;
+            const series = document.getElementById('editSeries').value || null;
+            const volumeStr = document.getElementById('editVolume').value;
+            const volume = volumeStr ? parseFloat(volumeStr) : null;
+            const publisher = document.getElementById('editPublisher').value || null;
+            const publishYearStr = document.getElementById('editPublishYear').value;
+            const publish_year = publishYearStr ? parseInt(publishYearStr) : null;
+            const synopsis = document.getElementById('editSynopsis').value || null;
+            const coverUrl = document.getElementById('editCoverUrl').value;
 
             const btn = document.getElementById('btnSaveEdit');
-            const spinner = document.getElementById('editSpinner');
-
+            btn.innerHTML = 'Salvando...';
             btn.disabled = true;
-            spinner.classList.remove('hidden');
 
             try {
-                const response = await fetch(`/api/books/${id}`, {
+                // Update text metadata
+                await fetch(`/api/books/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, author })
+                    body: JSON.stringify({
+                        title, author, series, volume, publisher, publish_year, synopsis
+                    })
                 });
 
-                if (response.ok) {
-                    showToast("Livro atualizado!", 'success');
-                    closeEditModal();
-                    loadBooks(); // Reload list to reflect changes
-                } else {
-                    const data = await response.json();
-                    showToast(data.detail || "Erro inesperado do servidor.", 'error');
+                // If a new cover was selected, download it
+                if (coverUrl) {
+                    await fetch(`/api/books/${id}/download-cover`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: coverUrl })
+                    });
                 }
-            } catch (error) {
-                showToast("Erro ao conectar.", 'error');
-            }
 
-            btn.disabled = false;
-            spinner.classList.add('hidden');
+                closeEditModal();
+                loadBooks();
+                showToast("Livro atualizado com sucesso.", "success");
+            } catch (e) {
+                showToast("Erro ao salvar", "error");
+            } finally {
+                btn.innerHTML = 'Salvar Alterações';
+                btn.disabled = false;
+            }
         }
 
-        let toastTimer;
-        function showToast(message, type) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMsg');
-            const toastIcon = document.getElementById('toastIcon');
+        async function searchMetadata() {
+            const title = document.getElementById('editTitle').value;
+            const author = document.getElementById('editAuthor').value;
+            const q = `${title} ${author}`.trim();
+            if (!q) return showToast("Digite um título ou autor antes.", "error");
 
-            clearTimeout(toastTimer);
-            toastMsg.textContent = message;
+            const btn = document.getElementById('btnSearchMeta');
+            btn.innerHTML = 'Buscando...';
+            btn.disabled = true;
 
-            if (type === 'error') {
-                toast.className = 'fixed bottom-6 top-auto left-1/2 -translate-x-1/2 transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-md shadow-2xl z-50 pointer-events-none bg-red-900 border border-red-700 text-red-100';
-                toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+            const resultsContainer = document.getElementById('metaSearchResults');
+
+            try {
+                const res = await fetch(`/api/metadata/search?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+
+                if (data.status === 'error') {
+                    showToast(data.message || "Erro retornado pela API do Google.", "error");
+                } else if (data.status === 'success' && data.results.length > 0) {
+                    resultsContainer.innerHTML = '';
+                    resultsContainer.classList.remove('hidden');
+
+                    data.results.forEach((r, idx) => {
+                        const safeCover = r.cover_url ? r.cover_url.replace(/'/g, "\\'") : '';
+                        const safeTitle = r.title ? r.title.replace(/'/g, "\\'") : '';
+                        const safeAuthor = r.author ? r.author.replace(/'/g, "\\'") : '';
+                        const safeSeries = r.series ? r.series.replace(/'/g, "\\'") : '';
+                        const safePub = r.publisher ? r.publisher.replace(/'/g, "\\'") : '';
+                        const safeSynop = r.synopsis ? encodeURIComponent(r.synopsis) : '';
+
+                        const div = document.createElement('div');
+                        div.className = "flex-none w-48 bg-darkcard rounded-lg border border-darkborder p-2 cursor-pointer hover:border-kindle transition-all flex flex-col items-center text-center gap-2 group";
+                        div.onclick = () => applyMetadataResult(safeTitle, safeAuthor, r.publish_year || '', safePub, safeSynop, safeCover, div);
+
+                        const imgHtml = r.cover_url
+                            ? `<img src="${r.cover_url}" class="w-16 h-24 object-cover rounded shadow group-hover:scale-105 transition-transform">`
+                            : `<div class="w-16 h-24 bg-[#222] rounded shadow flex items-center justify-center text-[10px] text-gray-600">S/ C</div>`;
+
+                        div.innerHTML = `
+                            ${imgHtml}
+                            <div class="w-full">
+                                <h4 class="text-xs font-bold text-gray-200 line-clamp-2" title="${r.title}">${r.title}</h4>
+                                <p class="text-[10px] text-gray-400 mt-1">${r.author || 'Desconhecido'}</p>
+                                ${r.publish_year ? `<p class="text-[9px] text-gray-500">${r.publish_year}</p>` : ''}
+                            </div>
+                        `;
+                        resultsContainer.appendChild(div);
+                    });
+
+                } else {
+                    showToast("Nenhum resultado encontrado no Google Books.", "warning");
+                }
+            } catch (e) {
+                showToast("Erro na busca de metadados.", "error");
+            } finally {
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg> Buscar na Internet';
+                btn.disabled = false;
+            }
+        }
+
+        function applyMetadataResult(title, author, year, publisher, encodedSynop, coverUrl, element) {
+            if (title) document.getElementById('editTitle').value = title;
+            if (author) document.getElementById('editAuthor').value = author;
+            if (year) document.getElementById('editPublishYear').value = year;
+            if (publisher) document.getElementById('editPublisher').value = publisher;
+            if (encodedSynop) document.getElementById('editSynopsis').value = decodeURIComponent(encodedSynop);
+            if (coverUrl) document.getElementById('editCoverUrl').value = coverUrl;
+
+            // Visual feedback inside the container
+            const allItems = document.getElementById('metaSearchResults').children;
+            for (let i = 0; i < allItems.length; i++) {
+                allItems[i].classList.remove('ring-2', 'ring-kindle');
+            }
+            element.classList.add('ring-2', 'ring-kindle');
+            showToast("Dados preenchidos! Clique em Salvar Alterações.", "info");
+        }
+
+        async function confirmDeleteBatch() {
+            const ids = Array.from(selectedIds);
+            const permanent = document.getElementById('permanentDeleteCheck').checked;
+
+            await fetch('/api/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids, permanent })
+            });
+
+            closeDeleteModal();
+            selectedIds.clear();
+            updateActionBar();
+            loadBooks();
+            showToast("Livros excluídos.", "success");
+        }
+
+        async function saveSettings() {
+            const folder = document.getElementById('cfgBooksFolder').value;
+            const threads = document.getElementById('cfgScannerThreads').value;
+            await fetch('/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ books_folder: folder, scanner_threads: parseInt(threads) })
+            });
+            closeSettingsModal();
+            loadBooks();
+            showToast("Configurações salvas.", "success");
+        }
+
+        async function pickFolderFor(id) {
+            try {
+                const r = await fetch('/api/pick-folder');
+                if (r.ok) {
+                    const d = await r.json();
+                    document.getElementById(id).value = d.path;
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        // --- Toast ---
+        let toastTimeout;
+        function showToast(msg, type = 'info', sticky = false) {
+            const el = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').innerText = msg;
+
+            clearTimeout(toastTimeout);
+
+            el.className = `fixed top-24 left-1/2 -translate-x-1/2 transform transition-all duration-300 flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl z-[70] pointer-events-none border backdrop-blur-md ${type === 'error' ? 'bg-red-900/80 border-red-500/50 text-red-100' :
+                type === 'success' ? 'bg-green-900/80 border-green-500/50 text-green-100' :
+                    type === 'warning' ? 'bg-orange-900/80 border-orange-500/50 text-orange-100' : // updated warning colors to orange
+                        'bg-darkcard/90 border-darkborder text-gray-200'
+                }`;
+
+            icon.innerHTML = type === 'success' ?
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' :
+                '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
+
+            el.classList.remove('-translate-y-10', 'opacity-0');
+
+            if (!sticky) {
+                toastTimeout = setTimeout(() => {
+                    el.classList.add('-translate-y-10', 'opacity-0');
+                }, 3000);
+            }
+        }
+
+        // --- Zoom Logic ---
+        const ZOOM_LEVELS = [
+            { gridW: "110px", listW: "30px", listTitle: "0.8rem", listAuthor: "0.65rem", markerPos: "0%", colsText: "9" },
+            { gridW: "135px", listW: "40px", listTitle: "0.85rem", listAuthor: "0.75rem", markerPos: "25%", colsText: "7" },
+            { gridW: "160px", listW: "50px", listTitle: "0.95rem", listAuthor: "0.8rem", markerPos: "50%", colsText: "6" }, // Default
+            { gridW: "200px", listW: "65px", listTitle: "1.05rem", listAuthor: "0.9rem", markerPos: "75%", colsText: "5" },
+            { gridW: "240px", listW: "85px", listTitle: "1.15rem", listAuthor: "1rem", markerPos: "100%", colsText: "4" }
+        ];
+
+        function handleZoomSlider() {
+            const val = parseInt(document.getElementById('zoomSlider').value);
+            applyZoomLevel(val);
+        }
+
+        function adjustZoom(delta) {
+            const slider = document.getElementById('zoomSlider');
+            let val = parseInt(slider.value) + delta;
+            if (val >= 0 && val < ZOOM_LEVELS.length) {
+                slider.value = val;
+                applyZoomLevel(val);
+            }
+        }
+
+        function applyZoomLevel(index) {
+            const z = ZOOM_LEVELS[index];
+            const doc = document.documentElement;
+            doc.style.setProperty('--grid-card-w', z.gridW);
+            doc.style.setProperty('--list-cover-w', z.listW);
+            doc.style.setProperty('--zoom-title-size', z.listTitle);
+            const tooltip = document.getElementById('zoomValueText');
+            if (tooltip) {
+                tooltip.innerText = z.colsText;
+                // Perfect pixel alignment for standard 16px range thumbs
+                tooltip.style.left = `calc(${z.markerPos} + (${0.5 - (index / 4)} * 16px))`;
+            }
+        }
+
+        // Initialize Zoom Default na montagem da tela
+        document.addEventListener('DOMContentLoaded', () => {
+            applyZoomLevel(2);
+            document.getElementById('zoomSlider').value = 2;
+        });
+
+
+        // --- Web Reader Logic (epub.js) ---
+        async function openReader(bookId, title, e) {
+            if (e) e.stopPropagation();
+            if (!activeProfileId) return showToast("Selecione um perfil primeiro.", "warning");
+
+            readerCurrentBookId = bookId;
+            document.getElementById('readerTitle').innerText = title;
+            document.getElementById('readerModal').classList.remove('opacity-0', 'pointer-events-none');
+
+            // Show loading state in viewer
+            const viewer = document.getElementById('viewer');
+            viewer.innerHTML = '<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-kindle mx-auto"></div>';
+
+            try {
+                // Fetch progress first
+                let startCfi = null;
+                const progRes = await fetch(`/api/books/${bookId}/progress?profile_id=${activeProfileId}`);
+                if (progRes.ok) {
+                    const progData = await progRes.json();
+                    if (progData.cfi_location) startCfi = progData.cfi_location;
+                }
+
+                // Initialize ePub
+                const bookUrl = `/api/books/${bookId}/file`;
+                epubBook = ePub(bookUrl);
+
+                viewer.innerHTML = ''; // clear loading
+
+                // Paginated reading
+                epubRendition = epubBook.renderTo("viewer", {
+                    width: "100%",
+                    height: "100%",
+                    spread: "none"
+                });
+
+                applyReaderTheme();
+
+                if (startCfi) {
+                    epubRendition.display(startCfi);
+                } else {
+                    epubRendition.display();
+                }
+
+                // Setup Navigation
+                epubRendition.on("relocated", function (location) {
+                    // Save progress
+                    saveReaderProgress(location.start.cfi);
+                    // Update progress bar
+                    updateReaderProgressBar();
+                });
+
+                // Keyboard arrows integration for reader
+                epubRendition.on('keyup', function (e) {
+                    if ((e.keyCode || e.which) == 37) { epubRendition.prev(); }
+                    if ((e.keyCode || e.which) == 39) { epubRendition.next(); }
+                });
+
+                // Generate locations for progress bar (takes a moment)
+                epubBook.ready.then(() => {
+                    return epubBook.locations.generate(1600); // 1600 chars per page roughly
+                }).then(() => {
+                    updateReaderProgressBar();
+                });
+
+            } catch (err) {
+                console.error(err);
+                viewer.innerHTML = '<p class="text-red-500">Erro ao carregar o livro. Verifique se o arquivo EPUB é válido.</p>';
+            }
+        }
+
+        function closeReader() {
+            document.getElementById('readerModal').classList.add('opacity-0', 'pointer-events-none');
+            if (epubBook) {
+                epubBook.destroy();
+                epubBook = null;
+                epubRendition = null;
+            }
+            document.getElementById('viewer').innerHTML = '';
+        }
+
+        function readerNavigate(dir) {
+            if (!epubRendition) return;
+            if (dir === 1) {
+                epubRendition.next();
             } else {
-                toast.className = 'fixed bottom-6 top-auto left-1/2 -translate-x-1/2 transform transition-all duration-300 flex items-center gap-3 px-6 py-4 rounded-md shadow-2xl z-50 pointer-events-none bg-[#105c31] border border-[#1b8c4c] text-green-50';
-                toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+                epubRendition.prev();
             }
-
-            void toast.offsetWidth;
-
-            toastTimer = setTimeout(() => {
-                toast.classList.add('translate-y-24', 'opacity-0');
-            }, 4000);
         }
+
+        async function saveReaderProgress(cfi) {
+            if (!readerCurrentBookId || !activeProfileId) return;
+            try {
+                await fetch(`/api/books/${readerCurrentBookId}/progress?profile_id=${activeProfileId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cfi_location: cfi })
+                });
+            } catch (e) {
+                console.error("Failed to save progress", e);
+            }
+        }
+
+        function updateReaderProgressBar() {
+            if (!epubBook || !epubRendition || !epubBook.locations.length()) return;
+            const currentLocation = epubRendition.currentLocation();
+            if (currentLocation && currentLocation.start) {
+                const percentage = epubBook.locations.percentageFromCfi(currentLocation.start.cfi);
+                const pct = Math.round(percentage * 100);
+                document.getElementById('readerProgressBar').style.width = pct + "%";
+            }
+        }
+
+        function toggleReaderTheme() {
+            readerDarkTheme = !readerDarkTheme;
+            applyReaderTheme();
+        }
+
+        function applyReaderTheme() {
+            if (!epubRendition) return;
+            if (readerDarkTheme) {
+                epubRendition.themes.register("dark", {
+                    "body": { "background": "#0f0f0f", "color": "#e5e7eb" },
+                    "a": { "color": "#00A8E1" }
+                });
+                epubRendition.themes.select("dark");
+            } else {
+                epubRendition.themes.register("light", {
+                    "body": { "background": "#ffffff", "color": "#1f2937" },
+                    "a": { "color": "#005a7a" }
+                });
+                epubRendition.themes.select("light");
+            }
+        }
+
     </script>
 </body>
 

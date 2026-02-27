@@ -1,3 +1,4 @@
 {
-    "books_folder": "C:\\Users\\frede\\OneDrive\\Documentos\\Devs\\Calibre Jr\\Ebooks"
+    "books_folder": "C:\\Users\\frede\\OneDrive\\Documentos\\Devs\\Calibre Jr\\Ebooks",
+    "scanner_threads": 4
 }
