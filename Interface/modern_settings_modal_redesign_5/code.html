@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configurações - Library Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FF00FF", // Vibrant Neon Pink
+                        "primary-dark": "#D500F9", // Slightly darker/purple-ish pink for hover
+                        "primary-light": "#FF80AB", // Light pink
+                        "background-dark": "#1A0518", // Deep Dark Plum Background
+                        "surface-dark": "#2D0A24", // Lighter Plum for modal surface
+                        "border-dark": "#4A1940", // Dark plum border
+                        "text-main": "#FFFFFF", // White for main text
+                        "text-sub": "#F8BBD0", // High-contrast light pink for subtext
+                        "input-bg": "#391232", // Dark input background
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': "1rem",
+                        '2xl': "1.25rem",
+                    },
+                },
+            },
+        };
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4A1940; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FF00FF; 
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-text-main flex items-center justify-center min-h-screen p-4 transition-colors duration-300">
+<div class="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm z-0"></div>
+<main class="relative z-10 w-full max-w-lg bg-surface-dark rounded-2xl shadow-2xl border border-border-dark flex flex-col max-h-[90vh] shadow-[#FF00FF]/10">
+<header class="flex justify-between items-center px-6 py-5 border-b border-border-dark">
+<h1 class="text-xl font-bold text-primary drop-shadow-[0_0_5px_rgba(255,0,255,0.5)]">Configurações</h1>
+<button aria-label="Fechar" class="p-2 -mr-2 rounded-full hover:bg-white/5 text-text-sub hover:text-primary transition-colors">
+<span class="material-icons-round text-xl">close</span>
+</button>
+</header>
+<div class="flex-1 overflow-y-auto p-6 space-y-5">
+<div class="bg-input-bg border border-border-dark rounded-xl p-5 shadow-sm">
+<label class="block text-sm font-semibold text-text-main mb-3" for="library-path">
+                    Pasta da Biblioteca (PC)
+                </label>
+<div class="flex gap-2">
+<div class="relative flex-grow">
+<input class="w-full bg-[#1A0518] border border-border-dark text-text-main text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-primary block p-2.5 truncate font-mono shadow-sm placeholder-white/30" id="library-path" readonly="" type="text" value="C:\Users\frede\OneDrive\Documentos\Devs\Calibre Library"/>
+</div>
+<button aria-label="Procurar pasta" class="flex items-center justify-center px-3 py-2 bg-[#1A0518] border border-border-dark rounded-lg hover:bg-white/5 hover:border-primary transition-all text-primary shadow-sm hover:shadow-[0_0_8px_rgba(255,0,255,0.3)]">
+<span class="material-icons-round text-lg">folder_open</span>
+</button>
+</div>
+</div>
+<div class="bg-input-bg border border-border-dark rounded-xl p-5 shadow-sm">
+<label class="block text-sm font-semibold text-text-main mb-1" for="threads">
+                    Processamento Simultâneo (Threads)
+                </label>
+<p class="text-xs text-text-sub mb-3 leading-relaxed opacity-90">
+                    Quantos livros o sistema tentará escanear por vez. Mais threads = mais rápido, porém requer mais RAM e CPU. Recomendado: 2.
+                </p>
+<input class="w-full bg-[#1A0518] border border-border-dark text-text-main text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-primary block p-2.5 font-mono shadow-sm" id="threads" max="16" min="1" type="number" value="4"/>
+</div>
+<div class="bg-input-bg border border-border-dark rounded-xl p-5 shadow-sm">
+<label class="block text-sm font-semibold text-text-main mb-1" for="kindle-path">
+                    Caminho Manual do Kindle (USB)
+                </label>
+<p class="text-xs text-text-sub mb-3 opacity-90">
+                    Altere apenas se a detecção automática falhar.
+                </p>
+<div class="flex gap-2">
+<input class="flex-grow bg-[#1A0518] border border-border-dark text-text-main text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-primary block p-2.5 font-mono shadow-sm" id="kindle-path" type="text" value="D:/documents"/>
+<button aria-label="Procurar pasta" class="flex items-center justify-center px-3 py-2 bg-[#1A0518] border border-border-dark rounded-lg hover:bg-white/5 hover:border-primary transition-all text-primary shadow-sm hover:shadow-[0_0_8px_rgba(255,0,255,0.3)]">
+<span class="material-icons-round text-lg">folder_open</span>
+</button>
+</div>
+</div>
+<div class="bg-[#23081D] border border-border-dark rounded-xl p-5 space-y-4 shadow-inner">
+<h3 class="text-sm font-semibold text-primary drop-shadow-[0_0_2px_rgba(255,0,255,0.4)]">Conexão e Preferências</h3>
+<div class="flex items-center justify-between">
+<span class="text-sm text-text-sub">Auto-scan ao iniciar</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-[#4A1940] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-icons-round text-base text-primary">dark_mode</span>
+<span class="text-sm text-text-sub">Modo Escuro</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" id="darkModeToggle" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-[#4A1940] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+</label>
+</div>
+</div>
+</div>
+<footer class="p-6 pt-2 pb-6 flex justify-end bg-[#1A0518]/30 rounded-b-2xl border-t border-border-dark">
+<button class="bg-primary hover:bg-primary-dark text-white font-bold py-2.5 px-6 rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 text-sm ring-2 ring-primary ring-opacity-50 tracking-wide">
+                Salvar e Re-escanear
+            </button>
+</footer>
+</main>
+<script>
+        // Optional: Keep toggle logic if user wants to switch themes manually later
+        const toggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        });
+    </script>
+
+</body></html>

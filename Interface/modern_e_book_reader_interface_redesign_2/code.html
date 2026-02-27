@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Modern E-book Reader Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#D4AF37", // Soft Amber/Gold
+                        "background-dark-sepia": "#1F1A17", // Deep chocolate-ebony
+                        "surface-dark-sepia": "#2C2420", // Slightly lighter for panels
+                        "text-cream": "#E9EDC9", // Soft cream
+                        "text-muted-sepia": "#B0A99F", 
+                        "sepia-glass": "rgba(31, 26, 23, 0.85)",
+                        "sepia-border": "#3E352F"
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        serif: ["Literata", "serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4A3E36; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B5B50; 
+        }
+        .glass-panel {
+            background: rgba(44, 36, 32, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(233, 237, 201, 0.05);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }.prose-custom {
+            color: #E9EDC9;
+            max-width: 65ch;
+        }
+        .prose-custom p {
+            line-height: 1.8;
+            margin-bottom: 1.5em;
+        }
+        .prose-custom h1, .prose-custom h2, .prose-custom h3, .prose-custom h4 {
+            color: #D4AF37;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body class="bg-background-dark-sepia text-text-cream font-sans h-screen overflow-hidden flex flex-col transition-colors duration-300 antialiased selection:bg-primary selection:text-background-dark-sepia">
+<header class="h-16 flex items-center justify-between px-6 border-b border-sepia-border bg-background-dark-sepia/90 backdrop-blur-md z-20 absolute top-0 w-full transition-colors duration-300">
+<div class="flex items-center space-x-4">
+<button class="flex items-center space-x-2 text-text-muted-sepia hover:text-primary transition-colors group">
+<span class="material-symbols-outlined font-light group-hover:scale-110 transition-transform">close</span>
+<span class="text-sm font-medium tracking-wide">Close</span>
+</button>
+<button class="p-2 rounded-lg text-text-muted-sepia hover:bg-surface-dark-sepia hover:text-primary transition-colors">
+<span class="material-symbols-outlined font-light">menu</span>
+</button>
+</div>
+<div class="flex-1 text-center">
+<h1 class="font-serif text-xl tracking-wide text-text-cream truncate mx-auto max-w-md opacity-90">
+            American Gods
+        </h1>
+<p class="text-xs text-text-muted-sepia tracking-widest uppercase mt-0.5">Neil Gaiman</p>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 rounded-full text-text-muted-sepia hover:bg-surface-dark-sepia hover:text-primary transition-colors" title="Bookmark">
+<span class="material-symbols-outlined font-light">bookmark_border</span>
+</button>
+<button class="p-2 rounded-full text-text-muted-sepia hover:bg-surface-dark-sepia hover:text-primary transition-colors" title="Settings">
+<span class="material-symbols-outlined font-light">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex relative overflow-hidden pt-16 pb-12">
+<aside class="absolute left-0 top-16 bottom-12 w-80 z-30 transform translate-x-0 transition-transform duration-300 border-r border-sepia-border flex flex-col glass-panel shadow-2xl">
+<div class="p-5 border-b border-sepia-border flex justify-between items-center bg-surface-dark-sepia/30">
+<h2 class="text-xs font-bold uppercase tracking-[0.15em] text-primary">Table of Contents</h2>
+<button class="text-text-muted-sepia hover:text-primary transition-colors"><span class="material-symbols-outlined text-lg">close</span></button>
+</div>
+<div class="overflow-y-auto flex-1 p-3 space-y-1">
+<a class="block px-4 py-3 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Title Page</a>
+<a class="block px-4 py-3 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Copyright</a>
+<a class="block px-4 py-3 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Dedication</a>
+<a class="block px-4 py-3 rounded-md text-sm font-medium text-primary bg-primary/10 border-l-2 border-primary" href="#">Introduction to this Edition</a>
+<a class="block px-4 py-3 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">A Note on the Text</a>
+<a class="block px-4 py-3 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Warning for Travelers</a>
+<div class="mt-4 pt-4 border-t border-sepia-border/50">
+<span class="block px-4 py-2 text-[10px] font-bold text-text-muted-sepia uppercase tracking-widest opacity-60">Part One</span>
+<a class="block px-8 py-2.5 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Chapter 1</a>
+<a class="block px-8 py-2.5 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Chapter 2</a>
+<a class="block px-8 py-2.5 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Chapter 3</a>
+<a class="block px-8 py-2.5 rounded-md text-sm text-text-muted-sepia hover:text-text-cream hover:bg-surface-dark-sepia/50 transition-all duration-200" href="#">Chapter 4</a>
+</div>
+</div>
+</aside>
+<div class="flex-1 flex justify-center items-start h-full overflow-y-auto no-scrollbar scroll-smooth pl-80 bg-background-dark-sepia">
+<div class="w-full max-w-[1400px] flex gap-20 px-16 py-12 h-full">
+<div class="flex-1 hidden lg:block h-full overflow-hidden border-r border-sepia-border/30 pr-10">
+<div class="prose-custom font-serif text-justify mx-auto">
+<h3 class="text-center italic font-normal mb-16 mt-4 text-2xl tracking-widest text-primary/90">INTRODUCTION TO THIS EDITION</h3>
+<p class="indent-10 first-letter:text-6xl first-letter:font-normal first-letter:text-primary first-letter:float-left first-letter:mr-3 first-letter:mt-[-10px] first-letter:font-serif">
+                        I DON'T KNOW what it is like to read this book. I only know what it was like to live the writing of it.
+                    </p>
+<p class="indent-10">
+                        I moved to the United States in 1992. Something was born then, in a corner of my mind. There were some isolated ideas that I knew were important, but that didn't seem to have any relation to each other: two men meeting on a plane; a car on the ice; the relevance of coin tricks and, above all, the United States — that strange and immense place where I was now living, and which I knew I didn't understand. However, I wanted to understand it. More than that: I wanted to describe it.
+                    </p>
+<p class="indent-10">
+                        It was during a brief stay in Iceland, where I watched a model about the voyages of Leif Erickson, that everything clicked. I wrote a letter to my agent and my editor explaining what the story of the book would be. I noted "American Gods" at the top of the letter, confident that I would come up with a better title.
+                    </p>
+<p class="indent-10">
+                        A few weeks later, my editor sent me a sketch of the cover. It was a road with a lightning bolt striking right in the middle, and at the top it said "American Gods". It looked like the cover of the book I had thought about writing.
+                    </p>
+</div>
+<div class="mt-12 text-center text-xs text-text-muted-sepia font-sans opacity-50 tracking-widest">12</div>
+</div>
+<div class="flex-1 h-full overflow-hidden pl-10">
+<div class="prose-custom font-serif text-justify mx-auto">
+<p class="indent-10">
+                        It was at the same time disconcerting and electrifying to see the cover before the book. I hung it on the wall and looked at it, intimidated, and any possibility of thinking of another title disappeared forever. That was the book cover. That was the book. I just needed to write it.
+                    </p>
+<p class="indent-10">
+                        I finished the first chapter during a train trip from Chicago to San Diego. And I continued traveling, and continued writing. I drove from Minneapolis to Florida on back roads, traversing paths that I imagined Shadow would take in the book. I wrote and, at times, when I got stuck, I hit the road. I ate <em class="italic text-primary/80">pasties</em> in the Upper Peninsula of Michigan and <em class="italic text-primary/80">hushpuppies</em> in Cairo, Illinois. I tried my best not to write about any place I hadn't been through.
+                    </p>
+<p class="indent-10">
+                        I wrote my book in many places — houses in Florida, a cabin in Wisconsin, a hotel room in Las Vegas.
+                    </p>
+<p class="indent-10">
+                        My narrative followed Shadow's journey, and, when I didn't know where he had gotten himself into, I wrote a story about the "Coming to America", and, when I finished, I had discovered Shadow's whereabouts, then went back to him. I wanted to write two thousand words a day, but gave myself satisfied with a thousand.
+                    </p>
+<p class="indent-10">
+                        I remember that, upon finishing the first draft of the book, I spoke with Gene Wolfe — the wisest writer I know and with more excellent novels than anyone else I've ever conversed with — that I thought I had finally learned how to write novels. He faced me and gave a gentle smile. "No one learns how to write novels," he explained. "We only learn to write the novel we are working on."
+                    </p>
+</div>
+<div class="mt-12 text-center text-xs text-text-muted-sepia font-sans opacity-50 tracking-widest">13</div>
+</div>
+</div>
+</div>
+</main>
+<div class="absolute bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-xl px-4 z-40">
+<div class="glass-panel rounded-2xl shadow-glass p-6 backdrop-blur-xl bg-opacity-95 ring-1 ring-white/10">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-xs font-bold text-primary uppercase tracking-[0.15em]">Reading Settings</h3>
+<button class="text-text-muted-sepia hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm font-bold">close</span></button>
+</div>
+<div class="grid grid-cols-4 gap-3 mb-8">
+<div class="col-span-1 flex items-center">
+<p class="text-xs text-text-muted-sepia font-medium">Theme</p>
+</div>
+<button class="flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-sepia-border bg-white/5 text-text-muted-sepia hover:bg-white/10 transition-all">
+<span class="material-symbols-outlined text-base">light_mode</span>
+<span class="text-xs font-medium">Light</span>
+</button>
+<button class="flex items-center justify-center space-x-2 py-2 px-3 rounded-lg border border-sepia-border bg-black/40 text-text-muted-sepia hover:bg-black/60 transition-all">
+<span class="material-symbols-outlined text-base">dark_mode</span>
+<span class="text-xs font-medium">Dark</span>
+</button>
+<button class="flex items-center justify-center space-x-2 py-2 px-3 rounded-lg bg-surface-dark-sepia text-primary shadow-lg ring-1 ring-primary/30 transition-all relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/5"></div>
+<span class="material-symbols-outlined text-base">auto_stories</span>
+<span class="text-xs font-medium">Sepia</span>
+</button>
+</div>
+<div class="h-px bg-sepia-border mb-6"></div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-text-muted-sepia uppercase tracking-wide">Font Size</span>
+<div class="flex items-center space-x-3 bg-surface-dark-sepia rounded-full p-1 border border-sepia-border">
+<button class="w-8 h-8 flex items-center justify-center rounded-full text-text-muted-sepia hover:text-text-cream hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-base">remove</span>
+</button>
+<span class="text-xs font-mono w-10 text-center text-text-cream">100%</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-full text-text-muted-sepia hover:text-text-cream hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-base">add</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-text-muted-sepia uppercase tracking-wide">Layout</span>
+<div class="flex items-center bg-surface-dark-sepia rounded-lg p-1 border border-sepia-border">
+<button class="flex items-center space-x-2 px-4 py-1.5 rounded-md bg-white/10 shadow-sm text-primary font-medium transition-all">
+<span class="material-symbols-outlined text-sm">import_contacts</span>
+<span class="text-[10px] uppercase tracking-wider font-bold">Paged</span>
+</button>
+<button class="flex items-center space-x-2 px-4 py-1.5 rounded-md text-text-muted-sepia hover:text-text-cream transition-all">
+<span class="material-symbols-outlined text-sm">swap_vert</span>
+<span class="text-[10px] uppercase tracking-wider font-bold">Scroll</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="h-12 border-t border-sepia-border bg-background-dark-sepia flex flex-col justify-center px-0 z-20">
+<div class="w-full h-[2px] bg-surface-dark-sepia relative cursor-pointer group">
+<div class="absolute h-full bg-primary w-[2%] transition-all duration-300 shadow-[0_0_10px_rgba(212,175,55,0.5)]"></div>
+<div class="absolute h-3 w-3 bg-primary rounded-full top-1/2 -mt-1.5 left-[2%] shadow-md opacity-100 transition-all ring-4 ring-primary/20"></div>
+<div class="absolute top-[-30px] left-[2%] -translate-x-1/2 bg-surface-dark-sepia border border-sepia-border text-primary text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            2% • Page 12
+        </div>
+</div>
+<div class="flex justify-between items-center px-6 mt-3">
+<span class="text-[10px] text-text-muted-sepia uppercase tracking-widest opacity-60 font-medium">15 min remaining</span>
+<span class="text-[10px] text-primary font-bold tracking-wider">2%</span>
+</div>
+</footer>
+
+</body></html>

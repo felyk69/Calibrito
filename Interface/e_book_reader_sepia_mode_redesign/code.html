@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>E-book Reader Sepia Mode Redesign</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              // Custom Sepia Palette
+              sepia: {
+                bg: "#eee9e0",      // Main background
+                ui: "#f6f3ed",      // UI elements background
+                text: "#4d463d",    // Main text
+                light: "#938c7c",   // Secondary text/icons
+                border: "#dcd6cb",  // Borders
+                accent: "#6b6258",  // Active elements
+              },
+              primary: "#6b6258",
+              "background-light": "#f5f5f5",
+              "background-dark": "#1f2937",
+            },
+            fontFamily: {
+              serif: ["Bitter", "serif"],
+              sans: ["Inter", "sans-serif"],
+            },
+            boxShadow: {
+              'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.1)',
+              'popover': '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
+            }
+          },
+        },
+      };
+    </script>
+<style>input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #dcd6cb;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #dcd6cb;
+            border-radius: 2px;
+        }.text-justify-custom {
+            text-align: justify;
+            text-justify: inter-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4 font-sans text-gray-800 transition-colors duration-200">
+<div class="w-full max-w-6xl h-[85vh] bg-sepia-bg dark:bg-stone-800 rounded-lg shadow-2xl flex flex-col overflow-hidden border border-gray-300 dark:border-stone-700 relative">
+<header class="h-14 bg-sepia-ui dark:bg-stone-900 border-b border-sepia-border dark:border-stone-700 flex items-center justify-between px-4 shrink-0 z-20">
+<div class="flex items-center space-x-2">
+<button class="p-2 rounded hover:bg-sepia-border/30 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 transition-colors" title="Table of Contents">
+<span class="material-icons-outlined text-xl">toc</span>
+</button>
+<button class="p-2 rounded hover:bg-sepia-border/30 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 transition-colors" title="Edit">
+<span class="material-icons-outlined text-xl">edit</span>
+</button>
+<button class="p-2 rounded hover:bg-sepia-border/30 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 transition-colors" title="Bookmarks">
+<span class="material-icons-outlined text-xl">bookmark_border</span>
+</button>
+</div>
+<div class="font-bold text-sepia-text dark:text-stone-200 text-sm md:text-base tracking-wide truncate mx-4">
+                Discourse on the Method
+            </div>
+<div class="flex items-center space-x-2 relative">
+<button class="p-2 rounded bg-sepia-border/50 dark:bg-stone-700 text-sepia-accent dark:text-stone-200 transition-colors shadow-sm" title="Text Settings">
+<span class="material-icons-outlined text-xl">text_format</span>
+</button>
+<button class="p-2 rounded hover:bg-sepia-border/30 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 transition-colors" title="Search">
+<span class="material-icons-outlined text-xl">search</span>
+</button>
+<button class="p-2 rounded hover:bg-sepia-border/30 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 transition-colors" title="Menu">
+<span class="material-icons-outlined text-xl">menu</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-hidden relative font-serif text-sepia-text dark:text-stone-300 leading-relaxed text-justify-custom flex">
+<div class="w-full h-full p-8 md:p-12 lg:px-20 lg:py-16 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 overflow-y-auto md:overflow-hidden select-text">
+<div class="space-y-6 text-lg">
+<p>
+                        Good sense is, of all things among men, the most equally distributed; for every one thinks himself so abundantly provided with it, that those even who are the most difficult to satisfy in everything else, do not usually desire a larger measure of this quality than they already possess. And in this it is not likely that all are mistaken the conviction is rather to be held as testifying that the power of judging aright and of distinguishing truth from error, which is properly what is called good sense or reason, is by nature equal in all men; and that the diversity of our opinions, consequently, does not arise from some being endowed with a larger share of reason than others, but solely from this, that we conduct our thoughts along different ways, and do not fix our attention on the same objects.
+                    </p>
+<p>
+                         For to be possessed of a vigorous mind is not enough; the prime requisite is rightly to apply it. The greatest minds, as they are capable of the greatest vices as well as of the greatest virtues, and those who proceed very slowly may, if they always follow the right path, advance much further than those who, though they run, forsake it.
+                    </p>
+</div>
+<div class="space-y-6 text-lg hidden md:block">
+<p>
+                        For myself, I have never fancied my mind to be in any respect more perfect than those of the generality; on the contrary, I have often wished that I were equal to some others in promptitude of thought, or in clearness and distinctness of imagination, or in fullness and readiness of memory. And besides these, I know of no other qualities that contribute to the perfection of the mind; for as to the reason or sense, inasmuch as it is that alone which constitutes us men, and distinguishes us from the brutes, I am disposed to believe that it is to be found complete in each individual; and on this point to adopt the common opinion of philosophers, who say that the difference of degrees is only to be found in the accidents, and not in the forms or natures of the individuals of the same species.
+                    </p>
+<p>
+                        I will not hesitate, however, to avow my belief that it hath been my singular good fortune to have very early in life fallen in with certain tracks which have conducted me to considerations and maxims, of which I have formed a method that gives me the means.
+                    </p>
+</div>
+</div>
+<div class="absolute top-4 right-4 md:right-16 w-80 bg-sepia-ui dark:bg-stone-800 rounded-lg shadow-popover border border-sepia-border dark:border-stone-600 z-30 p-4 font-sans text-sm animate-fade-in-down">
+<div class="absolute -top-2 right-10 md:right-4 w-4 h-4 bg-sepia-ui dark:bg-stone-800 border-t border-l border-sepia-border dark:border-stone-600 transform rotate-45"></div>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<span class="text-sepia-light dark:text-stone-400 w-16">Font</span>
+<div class="flex-1 flex items-center bg-white dark:bg-stone-900 border border-sepia-border dark:border-stone-600 rounded">
+<button class="flex-1 px-3 py-1.5 text-left text-sepia-text dark:text-stone-300 font-serif border-r border-sepia-border dark:border-stone-600 truncate">
+                                Bitter Regular
+                            </button>
+<span class="px-2 text-xs font-semibold text-sepia-text dark:text-stone-300">11</span>
+<div class="flex border-l border-sepia-border dark:border-stone-600">
+<button class="px-2 hover:bg-gray-100 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 font-bold">−</button>
+<button class="px-2 hover:bg-gray-100 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 font-bold border-l border-sepia-border dark:border-stone-600">+</button>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sepia-light dark:text-stone-400 w-16">Spacing</span>
+<div class="flex-1 flex items-center bg-white dark:bg-stone-900 border border-sepia-border dark:border-stone-600 rounded">
+<div class="flex-1 px-3 py-1.5 text-left text-sepia-text dark:text-stone-300 font-mono">
+                                1.60
+                            </div>
+<div class="flex border-l border-sepia-border dark:border-stone-600">
+<button class="px-2 hover:bg-gray-100 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 font-bold">−</button>
+<button class="px-2 hover:bg-gray-100 dark:hover:bg-stone-700 text-sepia-accent dark:text-stone-400 font-bold border-l border-sepia-border dark:border-stone-600">+</button>
+</div>
+</div>
+</div>
+<div class="flex items-center">
+<span class="text-sepia-light dark:text-stone-400 w-16">Theme</span>
+<div class="flex-1 flex items-center space-x-3">
+<label class="inline-flex items-center cursor-pointer">
+<input class="form-radio text-stone-400 border-gray-300 focus:ring-stone-400 w-4 h-4" name="theme" type="radio"/>
+<span class="ml-2 text-sepia-text dark:text-stone-300">Light</span>
+</label>
+<label class="inline-flex items-center cursor-pointer">
+<input checked="" class="form-radio text-primary border-gray-300 focus:ring-primary w-4 h-4" name="theme" type="radio"/>
+<span class="ml-2 text-sepia-text dark:text-stone-300 font-medium">Sepia</span>
+</label>
+<label class="inline-flex items-center cursor-pointer">
+<input class="form-radio text-gray-800 border-gray-300 focus:ring-gray-800 w-4 h-4" name="theme" type="radio"/>
+<span class="ml-2 text-sepia-text dark:text-stone-300">Dark</span>
+</label>
+</div>
+</div>
+<div class="flex items-center pl-16 pt-1">
+<label class="inline-flex items-center cursor-pointer">
+<input class="form-radio text-black border-gray-300 focus:ring-black w-4 h-4" name="theme" type="radio"/>
+<span class="ml-2 text-sepia-text dark:text-stone-300">Invert</span>
+</label>
+</div>
+<div class="flex items-center mt-2">
+<span class="text-sepia-light dark:text-stone-400 w-16">Layout</span>
+<div class="flex-1 flex items-center space-x-3">
+<label class="inline-flex items-center cursor-pointer">
+<input checked="" class="form-radio text-primary border-gray-300 focus:ring-primary w-4 h-4" name="layout" type="radio"/>
+<span class="ml-2 text-sepia-text dark:text-stone-300 font-medium">Paginated</span>
+</label>
+<label class="inline-flex items-center cursor-pointer">
+<input class="form-radio text-stone-400 border-gray-300 focus:ring-stone-400 w-4 h-4" name="layout" type="radio"/>
+<span class="ml-2 text-sepia-text dark:text-stone-300">Scrolled</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer class="h-12 bg-sepia-ui dark:bg-stone-900 border-t border-sepia-border dark:border-stone-700 flex items-center px-4 shrink-0 z-20 space-x-4">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-sepia-border dark:border-stone-600 text-sepia-accent dark:text-stone-400 hover:bg-sepia-border/30 dark:hover:bg-stone-700 transition-colors">
+<span class="material-icons-outlined text-base">arrow_back_ios_new</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-sepia-border dark:border-stone-600 text-sepia-accent dark:text-stone-400 hover:bg-sepia-border/30 dark:hover:bg-stone-700 transition-colors">
+<span class="material-icons-outlined text-base">undo</span>
+</button>
+<div class="flex-1 flex items-center space-x-3">
+<span class="text-xs text-sepia-light dark:text-stone-500 font-medium min-w-[2rem] text-right">5%</span>
+<div class="relative w-full group">
+<div class="absolute top-1/2 -translate-y-1/2 left-0 w-full h-1 pointer-events-none flex justify-between px-1">
+<div class="h-2 w-px bg-sepia-border dark:bg-stone-600"></div>
+<div class="h-2 w-px bg-sepia-border dark:bg-stone-600"></div>
+<div class="h-2 w-px bg-sepia-border dark:bg-stone-600"></div>
+<div class="h-2 w-px bg-sepia-border dark:bg-stone-600"></div>
+<div class="h-2 w-px bg-sepia-border dark:bg-stone-600"></div>
+</div>
+<input class="w-full h-1 bg-transparent appearance-none relative z-10 focus:outline-none" max="100" min="0" type="range" value="5"/>
+</div>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-sepia-border dark:border-stone-600 text-sepia-accent dark:text-stone-400 hover:bg-sepia-border/30 dark:hover:bg-stone-700 transition-colors">
+<span class="material-icons-outlined text-base">arrow_forward_ios</span>
+</button>
+</footer>
+</div>
+
+</body></html>

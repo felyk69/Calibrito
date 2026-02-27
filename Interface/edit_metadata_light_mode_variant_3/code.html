@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Metadata Modal - Sepia Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B4513", // SaddleBrown - warm deep brown for actions
+                        "primary-hover": "#65330E", // Darker brown
+                        "primary-light": "#F5DEB3", // Wheat - for light accents
+                        "primary-focus": "#A0522D", // Sienna - for focus rings
+                        "background-light": "#FDF5E6", // OldLace - parchment-like background
+                        "background-dark": "#2e2520", // Very dark brown
+                        "surface-light": "#FFF8DC", // Cornsilk - modal background
+                        "surface-dark": "#3e322b", // Dark brown modal
+                        "border-light": "#D2B48C", // Tan
+                        "border-dark": "#5D4037", // Dark brown border
+                        "text-main-light": "#3E2723", // Very dark brown text
+                        "text-main-dark": "#EFEBE9", // Light grey-brown text
+                        "text-sub-light": "#5D4037", // Medium brown text
+                        "text-sub-dark": "#D7CCC8", // Lighter brown text
+                        "input-bg": "#FFFFF0", // Ivory
+                    },
+                    fontFamily: {
+                        display: ["Merriweather", "serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem", // slightly sharper corners for classic feel
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 6px -1px rgba(139, 69, 19, 0.1), 0 2px 4px -1px rgba(139, 69, 19, 0.06)',
+                        'modal': '0 25px 50px -12px rgba(62, 39, 35, 0.25)',
+                    }
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body h-screen w-screen overflow-hidden flex items-center justify-center relative text-text-main-light dark:text-text-main-dark">
+<div class="absolute inset-0 z-0 bg-cover bg-center opacity-20 pointer-events-none filter sepia blur-sm mix-blend-multiply" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBgxcBia18AllwpQKPksq8EzYkPq0fZn4tz0DH42KybyrQfNwat5A4B27CX0AgralBnixXRF8b36P6TEkKI6qzuud7XNGUB0q4b8g1RwzauugBP-JhCJ0H-XlzzP9vvTXZlhddUbBvbKPAoKVIguDfIBxEgHmb2uRAMhnXpL7gFYjVgSnNzLUZy-nopqP3d5P527wFnYmVz7y3L_sc500bdz7AY0b0BynZixmT5rb3__QLFWTbzQflD-jhddGSHAtuuv4mmBuuytUM');"></div>
+<div class="absolute inset-0 z-10 bg-amber-900/10 backdrop-blur-sm dark:bg-black/60 flex items-center justify-center p-4">
+<div class="bg-surface-light dark:bg-surface-dark w-full max-w-4xl h-[85vh] md:h-auto rounded-lg shadow-modal flex flex-col overflow-hidden transform transition-all border border-border-light dark:border-border-dark">
+<div class="flex items-center justify-between px-6 py-4 border-b border-border-light dark:border-border-dark bg-[#FAEBCCA0] dark:bg-[#3e322b]">
+<h2 class="text-xl font-bold font-display text-primary dark:text-[#E6C298]">Edit Metadata</h2>
+<button class="text-text-sub-light dark:text-primary-light hover:text-primary dark:hover:text-white transition-colors rounded-full p-1 hover:bg-amber-100 dark:hover:bg-white/10">
+<span class="material-icons-round">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 bg-surface-light dark:bg-surface-dark">
+<div class="flex flex-col md:flex-row gap-8 h-full">
+<div class="w-full md:w-1/3 flex flex-col gap-4">
+<div class="aspect-[2/3] w-full rounded-md overflow-hidden shadow-lg border-4 border-white dark:border-[#4E342E] relative group ring-1 ring-stone-300 dark:ring-stone-800">
+<img alt="Book Cover - The Martian" class="w-full h-full object-cover sepia-[.2]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBW8OtrOTSmoLaSxUZASbKiqYQVqxkXjuuvh84Cn7ZHm_TddR8yl-hZqsh2Ooct0FxsAQXofxG9M1ugcLUc8gDTls6vwqjmpC43UgzDlTvLcHnCnmjdb_3dA_HfcOrjAxLA8dK_Xo5sYC4C9xgPuRDTL1nqCEBVDSvJhXfjdLBcYPOTZqY1GcFFtQ-ssYdHhKyYd_a_rjOvNYt6lS0l4W4KHpIErRGmr7iMioNUdHrmC2Mdy5H7PJnfsaj5-vG1qlwgOShWPv0i2m8"/>
+<div class="absolute inset-0 bg-primary/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+<span class="material-icons-round text-white text-4xl drop-shadow-md">edit</span>
+</div>
+</div>
+<button class="w-full py-2.5 px-4 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#4E342E] hover:bg-amber-50 dark:hover:bg-[#5D4037] text-primary dark:text-[#E6C298] font-medium transition-colors flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
+<span class="material-icons-round text-sm">image</span>
+                            Change Cover
+                        </button>
+</div>
+<div class="w-full md:w-2/3 flex flex-col gap-5">
+<div class="bg-[#F5DEB3] dark:bg-[#4E342E] p-1 rounded flex text-sm font-medium border border-border-light dark:border-border-dark">
+<button class="flex-1 py-1.5 rounded text-text-sub-light dark:text-[#D7CCC8] hover:text-primary dark:hover:text-white transition-colors">ISBN</button>
+<button class="flex-1 py-1.5 rounded bg-surface-light dark:bg-[#5D4037] shadow-sm text-primary dark:text-[#E6C298] transition-all font-bold font-display tracking-wide border border-border-light/50 dark:border-transparent">Title</button>
+</div>
+<div class="relative group">
+<label class="text-xs font-bold text-text-sub-light dark:text-[#D7CCC8] uppercase mb-1.5 block tracking-wide font-display">Search by Title</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-primary/60 dark:text-[#A1887F]">
+<span class="material-icons-round text-lg">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-2.5 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#2e2520] text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-focus focus:border-primary-focus outline-none transition-shadow placeholder-stone-400" placeholder="Enter book title" type="text" value="The Martian"/>
+</div>
+<div class="absolute top-full left-0 right-0 mt-2 bg-input-bg dark:bg-[#2e2520] rounded shadow-xl border border-border-light dark:border-border-dark z-20 overflow-hidden hidden group-hover:block">
+<div class="p-2 space-y-1">
+<div class="flex items-center gap-3 p-2 bg-amber-50 dark:bg-[#3e322b] rounded-sm cursor-pointer border border-amber-100 dark:border-[#4E342E]">
+<div class="w-8 h-12 bg-stone-200 dark:bg-stone-700 rounded-sm overflow-hidden flex-shrink-0">
+<img alt="Cover 1" class="w-full h-full object-cover sepia-[.3]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEvl4EOewjSk-6nBefCOBPbSZ97vy8m7Sp_mu0F81mwhB2NcmWFBBQ_mzexbazAkvo6ss7eoEB7DHtiSIwDH6CfWs5XGqoy7ISdf93YSEtb4TvXXAMGUXYL0jCpSXHy5cZg10dkkmTNV4WnbC8g-5-J84SXSXI-9CGIEmi139GOOtj_Hq7I1D3J1bi2DPi1R0gesZKFbegyvE8863tlm7jngXMMjp6tK96wXyeGV9jeETqMXx6M2iMTn6WvXIzDYZQWy58hOAO3WA"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-primary dark:text-[#E6C298] truncate font-display">The Martian</p>
+<p class="text-xs text-text-sub-light dark:text-[#BCAAA4]">Andy Weir</p>
+</div>
+<span class="material-icons-round text-primary text-sm">check</span>
+</div>
+<div class="flex items-center gap-3 p-2 hover:bg-amber-50 dark:hover:bg-[#3e322b] rounded-sm cursor-pointer transition-colors">
+<div class="w-8 h-12 bg-stone-200 dark:bg-stone-700 rounded-sm overflow-hidden flex-shrink-0">
+<img alt="Cover 2" class="w-full h-full object-cover sepia-[.3]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSkBCaLHkazX_9OhpGXCxXm6ra0P15UE3LX7GnltZkvkgI2TGT3Bs-CLBSclPNFG41n4mI5LlLPBYF5hPKnE7GMTQV3ceTCaeDMOcTLYINjCyoH6oNXnBtC73b1nEM0Lj_Kd7ZHjeXae7qjjlOAfBFV7rIKybjt5nLq9KZzlgfpMICI0yx6Fl5GIVhLoOUq6lF_y5G2xAUv7xigD2QED64jV2z67zhmG0b0Ni3eZ0MrISfl6iyqJnWt_OXrfqhBC_gwz0t4DcUe2g"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-text-main-light dark:text-[#E6C298] truncate font-display">The Martian</p>
+<p class="text-xs text-text-sub-light dark:text-[#BCAAA4]">Andy Weir (2011)</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-2 hover:bg-amber-50 dark:hover:bg-[#3e322b] rounded-sm cursor-pointer transition-colors">
+<div class="w-8 h-12 bg-stone-200 dark:bg-stone-700 rounded-sm overflow-hidden flex-shrink-0">
+<img alt="Cover 3" class="w-full h-full object-cover sepia-[.3]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtXM9iY4L1lQuMpepcbzJMRi-zvQHrzHNXSJRWXqezXGUkrcCSznxVneWyH33pTCeEqI96l_4yJdG3esQRDR5tlxAuadFHJsMYbeRx5izTDGKFYDAWxMY9IbbJWOPDP3rGNoI7I1Z6bgbHQ9Cd8gSMBBYAZIez7CpDDoDmf5bLCcYOyRlv6LVtqINVbkOQMmtskh3sHEnXC2jotU33nojeyf9KnQMW2WuitXMQ9tgzXHZ7zJ0kDSbRDpLiYdGVg9yKqkoPYoGm3AI"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-text-main-light dark:text-[#E6C298] truncate font-display">The Martian: A Novel</p>
+<p class="text-xs text-text-sub-light dark:text-[#BCAAA4]">Andy Weir</p>
+</div>
+<span class="text-xs text-text-sub-light dark:text-[#8D6E63] ml-auto">Google Books</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-5">
+<div>
+<label class="text-xs font-bold text-text-sub-light dark:text-[#D7CCC8] uppercase mb-1.5 block tracking-wide font-display">Author</label>
+<input class="w-full px-3 py-2.5 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#2e2520] text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-focus focus:border-primary-focus outline-none transition-all placeholder-stone-400" type="text" value="Andy Weir"/>
+</div>
+<div>
+<label class="text-xs font-bold text-text-sub-light dark:text-[#D7CCC8] uppercase mb-1.5 block tracking-wide font-display">Series</label>
+<div class="relative">
+<input class="w-full px-3 py-2.5 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#2e2520] text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-focus focus:border-primary-focus outline-none transition-all placeholder-stone-400" type="text" value="N/A"/>
+</div>
+</div>
+</div>
+<div>
+<label class="text-xs font-bold text-text-sub-light dark:text-[#D7CCC8] uppercase mb-1.5 block tracking-wide font-display">Tags</label>
+<div class="w-full min-h-[46px] px-2 py-2 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#2e2520] flex flex-wrap gap-2 focus-within:ring-2 focus-within:ring-primary-focus focus-within:border-primary-focus transition-all">
+<span class="bg-amber-100 dark:bg-[#4E342E] text-primary dark:text-[#E6C298] text-sm px-2.5 py-1 rounded flex items-center gap-1 font-medium border border-amber-200 dark:border-[#5D4037]">
+                                    Science Fiction
+                                    <button class="hover:text-[#65330E] dark:hover:text-white"><span class="material-icons-round text-sm">close</span></button>
+</span>
+<input class="bg-transparent border-none outline-none text-sm flex-1 min-w-[80px] text-text-main-light dark:text-text-main-dark placeholder-stone-400" placeholder="Add tag..." type="text"/>
+</div>
+</div>
+<div>
+<label class="text-xs font-bold text-text-sub-light dark:text-[#D7CCC8] uppercase mb-1.5 block tracking-wide font-display">Language</label>
+<div class="relative">
+<select class="w-full px-3 py-2.5 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#2e2520] text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-focus focus:border-primary-focus outline-none appearance-none transition-all">
+<option>English</option>
+<option>Spanish</option>
+<option>French</option>
+<option>German</option>
+</select>
+<span class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-primary/60 dark:text-[#A1887F]">
+<span class="material-icons-round">expand_more</span>
+</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col">
+<label class="text-xs font-bold text-text-sub-light dark:text-[#D7CCC8] uppercase mb-1.5 block tracking-wide font-display">Description/Synopsis</label>
+<textarea class="w-full flex-1 px-3 py-2.5 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#2e2520] text-text-main-light dark:text-text-main-dark focus:ring-2 focus:ring-primary-focus focus:border-primary-focus outline-none transition-all resize-none min-h-[120px] text-sm leading-relaxed placeholder-stone-400" placeholder="Enter book description...">Astronaut Mark Watney became one of the first people to walk on Mars. Now, he's sure he'll be the first person to die there. After a dust storm nearly kills him and forces his crew to evacuate while thinking him dead, Mark finds himself stranded and completely alone with no way to even signal Earth that he’s alive.</textarea>
+<div class="text-right mt-1">
+<span class="text-xs text-text-sub-light dark:text-[#A1887F]">Markdown supported</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-6 py-4 border-t border-border-light dark:border-border-dark flex items-center justify-end gap-3 bg-[#FAEBCCA0] dark:bg-[#3e322b] backdrop-blur-sm rounded-b-lg">
+<button class="mr-auto px-4 py-2 rounded bg-red-50 dark:bg-red-900/10 text-red-800 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 font-medium transition-colors flex items-center gap-2 border border-red-200 dark:border-red-900/20">
+<span class="material-icons-round text-lg">delete</span>
+                    Delete Book
+                </button>
+<button class="px-5 py-2 rounded border border-border-light dark:border-border-dark bg-input-bg dark:bg-[#4E342E] text-text-sub-light dark:text-[#D7CCC8] hover:bg-amber-50 dark:hover:bg-[#5D4037] font-medium transition-colors">
+                    Cancel
+                </button>
+<button class="px-6 py-2 rounded bg-primary hover:bg-primary-hover text-[#FDF5E6] font-bold shadow-md hover:shadow-lg hover:shadow-amber-900/20 transition-all transform hover:-translate-y-0.5 border border-[#5D4037]">
+                    Save Changes
+                </button>
+</div>
+</div>
+</div>
+</body></html>

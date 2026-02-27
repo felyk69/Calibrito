@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Metadata - E-book Manager</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'dark-bg': '#121826',
+            'modal-bg': '#242b38',
+            'input-bg': '#1f2530',
+            'border-gray': '#374151',
+            'accent-blue': '#2563eb',
+            'danger-red': '#dc2626',
+            'text-muted': '#9ca3af',
+          }
+        }
+      }
+    }
+  </script>
+<style data-purpose="custom-scrollbars">
+    /* Custom scrollbar for the description and dropdown */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1f2530;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #4b5563;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6b7280;
+    }
+  </style>
+<style data-purpose="blur-background">
+    /* Simulating the blurred background dashboard */
+    .bg-dashboard-sim {
+      background: linear-gradient(rgba(18, 24, 38, 0.8), rgba(18, 24, 38, 0.8)), url('https://placehold.co/1376x768/1a1a1a/333333?text=Library+Dashboard+Blurred');
+      background-size: cover;
+      filter: blur(4px);
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body class="bg-dark-bg text-white font-sans antialiased min-h-screen flex items-center justify-center p-4">
+<!-- BEGIN: Blurred Background Simulation -->
+<div aria-hidden="true" class="bg-dashboard-sim"></div>
+<!-- END: Blurred Background Simulation -->
+<!-- BEGIN: Edit Metadata Modal -->
+<div class="w-full max-w-4xl bg-modal-bg rounded-lg shadow-2xl border border-border-gray overflow-hidden" data-purpose="edit-metadata-modal" id="metadata-modal">
+<!-- BEGIN: Modal Header -->
+<header class="flex items-center justify-between p-6 border-b border-border-gray">
+<h2 class="text-xl font-semibold">Edit Metadata</h2>
+<button aria-label="Close modal" class="text-text-muted hover:text-white transition-colors">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</button>
+</header>
+<!-- END: Modal Header -->
+<main class="p-8">
+<div class="flex flex-col md:flex-row gap-8">
+<!-- BEGIN: Left Column (Cover) -->
+<div class="w-full md:w-1/3 flex flex-col items-center">
+<div class="relative group">
+<img alt="Current Book Cover" class="w-full h-auto rounded shadow-lg border border-border-gray object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6PHFHsKefqmmx2zLdrB_N-ikZdO0KNfuOoXpGk27cfU2I_U68qDeJgQ6q-U0-YRFzHTHDb6K2Sks7AxcHR9HfFfs3mF77VgPcQ9vg62nGr_FCJBBT-S26eBFkkMvRTcMh0b8MaKB9XM6MHTgZONTcU4EicKvOlMKzNL7p4f1B8qwd_3mpwVUhE-_9izDMzzVromWL0HRJyYyFJOR4FOzdmHDjMKeSmS1U3YJhsaV87bc7fL-CZEoGbB49ExBzzfvIoXDnT5LGL8I" style="max-height: 400px;"/>
+</div>
+<button class="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 bg-gray-700 hover:bg-gray-600 rounded-md border border-gray-600 transition-all text-sm">
+<svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+            Change Cover
+          </button>
+</div>
+<!-- END: Left Column (Cover) -->
+<!-- BEGIN: Right Column (Form Fields) -->
+<div class="w-full md:w-2/3 space-y-5">
+<!-- Search Switcher -->
+<div class="flex bg-input-bg rounded-md p-1 mb-4 border border-border-gray">
+<button class="flex-1 py-1.5 text-sm font-medium text-text-muted hover:text-white">ISBN</button>
+<button class="flex-1 py-1.5 text-sm font-medium bg-gray-600 rounded text-white shadow">Title</button>
+</div>
+<!-- Search Input with active Dropdown -->
+<div class="relative">
+<label class="block text-xs font-bold text-text-muted uppercase mb-1">Search by Title</label>
+<input class="w-full bg-input-bg border-border-gray focus:ring-accent-blue focus:border-accent-blue rounded-md text-sm py-2.5 px-3" placeholder="Enter book title" type="text" value="The Martian"/>
+<!-- BEGIN: Search Results Dropdown -->
+<div class="absolute z-10 w-full mt-1 bg-modal-bg border border-border-gray rounded-md shadow-xl overflow-hidden">
+<div class="max-h-60 overflow-y-auto">
+<!-- Result Item -->
+<div class="flex items-center gap-3 p-2 hover:bg-gray-700 cursor-pointer border-b border-border-gray/50">
+<img alt="Thumbnail" class="w-10 h-14 object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqtypqMD1Ccrj0kpTlxxtPWXLtIozIJE6UKL9vt49Mssq_frimetE-WxO780TzcnHYBcss5_LR2HCxo5VHOi597-C_8sugbLlPfDxjVt0NMO0GyD-lqcQYjYLkDMMMO6BTeeQE_3DKFl4WDgu6FR8VlGBkHXxNn4lfd3Yot2tMVE7go1DHTRujIMCwhOLNdYKFpN4LIY0ESjiaF_IwXmsWzHtihQiQH2NL26yDoW7En2JwbycOlsYctBN4HjxjbgvUjrUsCMj5328"/>
+<div class="flex-1">
+<div class="text-sm font-medium">The Martian</div>
+<div class="text-xs text-text-muted">Andy Weir</div>
+</div>
+</div>
+<!-- Result Item 2 -->
+<div class="flex items-center gap-3 p-2 hover:bg-gray-700 cursor-pointer border-b border-border-gray/50">
+<img alt="Thumbnail" class="w-10 h-14 object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQzzr8iboKrihPzCHOk98_8fuwQvBfrPfC-sYw8d6rgvALmrHQ_dtIjq_mgPKl5y4jjX9xkLOt50AeeUeFBlhSzKU8HvI_XytBFR_JhmOf3xBSHwdpYDzsfk6efnRwM-Al_xcZ0lMXC6rTH8JHib1xDZZlIaU8ci-piFHgxYcnSeO-SVHE7nqUaPxO0ZKDKaJ0UtqXsYLZMUvZrD64rjpgL0dCBU0y8dvxT8yKHfmhEA3nE-PffHmEdGQu5381uJoTg7yJ5gX9VF0"/>
+<div class="flex-1">
+<div class="text-sm font-medium">The Martian</div>
+<div class="text-xs text-text-muted">Andy Weir</div>
+</div>
+</div>
+<!-- Result Item 3 -->
+<div class="flex items-center gap-3 p-2 hover:bg-gray-700 cursor-pointer">
+<img alt="Thumbnail" class="w-10 h-14 object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAK-Nj2t3AJC1OzcapDQOY_Ja627dyWsKxMoxvQn3zow-G-1EE0buL8LqFKR1RinDXMH5qfznMvLUkzb2Po8GSfESaNfebVj7WlHX5kjiKNEL4w4kOWR0fDqBFc2zPMu7QC5jh_BIyHG8tqD6iOWu9D5uTn0dBc9NRDQGCRYkXFB896HJ8UgcTTrO42_BASRD3Nr_xI0nz6QvHygI1qMhCM-m2lVbwmQxwt7CfuVNAvltKNwCGzPEaTxab0Rkj3aUGRl-b6UM_SMqI"/>
+<div class="flex-1">
+<div class="text-sm font-medium">The Martian</div>
+<div class="text-xs text-text-muted">Andy Weir</div>
+</div>
+<span class="text-[10px] text-text-muted pr-2 italic">Google Books</span>
+</div>
+</div>
+</div>
+<!-- END: Search Results Dropdown -->
+</div>
+<!-- Author Field -->
+<div>
+<label class="block text-xs font-bold text-text-muted uppercase mb-1">Author</label>
+<input class="w-full bg-input-bg border-border-gray rounded-md text-sm py-2 px-3 focus:ring-accent-blue" type="text" value="Andy Weir"/>
+</div>
+<!-- Series Information -->
+<div class="grid grid-cols-4 gap-4">
+<div class="col-span-3">
+<label class="block text-xs font-bold text-text-muted uppercase mb-1">Series</label>
+<input class="w-full bg-input-bg border-border-gray rounded-md text-sm py-2 px-3 focus:ring-accent-blue" type="text" value="N/A"/>
+</div>
+<div class="col-span-1">
+<label class="block text-xs font-bold text-text-muted uppercase mb-1 truncate">Number</label>
+<input class="w-full bg-input-bg border-border-gray rounded-md text-sm py-2 px-3 text-center focus:ring-accent-blue" type="text" value="-"/>
+</div>
+</div>
+<!-- Tags -->
+<div>
+<label class="block text-xs font-bold text-text-muted uppercase mb-1">Tags</label>
+<div class="flex flex-wrap items-center gap-2 p-2 bg-input-bg border border-border-gray rounded-md min-h-[42px]">
+<span class="flex items-center gap-1 bg-blue-900/40 text-blue-200 text-xs px-2 py-1 rounded border border-blue-800/50">
+                Science Fiction <button class="hover:text-white">×</button>
+</span>
+<span class="flex items-center gap-1 bg-blue-900/40 text-blue-200 text-xs px-2 py-1 rounded border border-blue-800/50">
+                Survival <button class="hover:text-white">×</button>
+</span>
+<span class="flex items-center gap-1 bg-blue-900/40 text-blue-200 text-xs px-2 py-1 rounded border border-blue-800/50">
+                Mars <button class="hover:text-white">×</button>
+</span>
+<div class="flex items-center text-text-muted text-xs gap-1 ml-1 cursor-text">
+<svg class="h-3 w-3" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                Add Tag
+              </div>
+</div>
+</div>
+<!-- Language -->
+<div>
+<label class="block text-xs font-bold text-text-muted uppercase mb-1">Language</label>
+<select class="w-full bg-input-bg border-border-gray rounded-md text-sm py-2 px-3 focus:ring-accent-blue appearance-none">
+<option selected="">English</option>
+<option>Spanish</option>
+<option>French</option>
+</select>
+</div>
+<!-- Description -->
+<div>
+<label class="block text-xs font-bold text-text-muted uppercase mb-1">Description/Synopsis</label>
+<textarea class="w-full bg-input-bg border-border-gray rounded-md text-sm py-2 px-3 focus:ring-accent-blue resize-none" rows="4">Astronaut Mark Watney became one of the first people to walk on Mars. Now, he's sure he'll be the first person to die there. After a dust storm nearly kills him...</textarea>
+</div>
+</div>
+<!-- END: Right Column (Form Fields) -->
+</div>
+</main>
+<!-- BEGIN: Modal Footer -->
+<footer class="p-6 bg-gray-800/30 border-t border-border-gray flex flex-col sm:flex-row justify-end gap-3">
+<div class="flex gap-3">
+<button class="px-6 py-2 bg-accent-blue hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors">Save Changes</button>
+<button class="px-6 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md text-sm font-medium transition-colors">Cancel</button>
+</div>
+<div class="sm:ml-auto">
+<button class="flex items-center gap-2 px-4 py-2 bg-danger-red hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors">
+<svg class="h-4 w-4" fill="none" stroke="currentColor" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+          Delete Book
+        </button>
+</div>
+</footer>
+<!-- END: Modal Footer -->
+</div>
+<!-- END: Edit Metadata Modal -->
+</body></html>

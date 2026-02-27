@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KindleManager Dashboard Dark Sepia Variant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#D4A373", // Soft amber/muted gold
+                        secondary: "#FAEDCD", // Very light cream for varied states
+                        accent: "#CCD5AE", // Muted sage/cream for highlights
+                        "background-dark": "#1F1A17", // Deep warm chocolate-ebony
+                        "surface-dark": "#2B221E", // Slightly lighter brown for surfaces
+                        "surface-card": "#362B26", // Even lighter brown for card backgrounds
+                        "text-main": "#E9EDC9", // Warm cream
+                        "text-muted": "#A5A58D", // Muted khaki/grey
+                        "border-sepia": "#D4A373", // Amber border
+                        "amber-glow": "rgba(212, 163, 115, 0.3)",
+                        "amber-pulse": "#D4A373",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                    },
+                    boxShadow: {
+                        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.4)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2)',
+                        'glow': '0 0 10px rgba(212, 163, 115, 0.3), 0 0 4px rgba(212, 163, 115, 0.1)',
+                        'inner-dark': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.5)',
+                        'fab': '0 4px 12px rgba(0, 0, 0, 0.5), 0 0 8px rgba(212, 163, 115, 0.4)',
+                        'panel': '0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
+                    }
+                },
+            },
+        };
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1F1A17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3E322C;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4A373;
+        }
+        .pulse-dot-loading {
+             background-color: #D4A373;
+             box-shadow: 0 0 0 rgba(212, 163, 115, 0.4);
+             animation: pulse-amber 2s infinite;
+        }
+         @keyframes pulse-amber {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(212, 163, 115, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(212, 163, 115, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(212, 163, 115, 0);
+            }
+        }
+        .card-gradient {
+            background: linear-gradient(135deg, #362B26 0%, #2B221E 100%);
+        }.theme-panel {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(54, 43, 38, 0.85);border: 1px solid rgba(212, 163, 115, 0.2);
+        }
+        .theme-option {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .theme-option:hover {
+            background-color: rgba(212, 163, 115, 0.1);
+        }
+        .theme-option.active {
+            background-color: rgba(212, 163, 115, 0.15);
+            border-color: rgba(212, 163, 115, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-text-main h-screen flex flex-col overflow-hidden selection:bg-primary selection:text-[#1F1A17]">
+<header class="bg-surface-dark border-b border-primary/20 h-16 flex items-center justify-between px-6 shrink-0 z-20 shadow-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary text-3xl drop-shadow-[0_0_5px_rgba(212,163,115,0.3)]">menu_book</span>
+<h1 class="text-xl font-bold tracking-tight text-text-main">KindleManager</h1>
+</div>
+<nav class="hidden md:flex ml-8 space-x-6">
+<a class="text-primary font-bold border-b-2 border-primary pb-0.5 drop-shadow-[0_0_3px_rgba(212,163,115,0.3)]" href="#">Biblioteca</a>
+<a class="text-text-muted hover:text-primary transition-colors font-medium hover:drop-shadow-[0_0_3px_rgba(212,163,115,0.3)]" href="#">Coleções</a>
+<a class="text-text-muted hover:text-primary transition-colors font-medium hover:drop-shadow-[0_0_3px_rgba(212,163,115,0.3)]" href="#">Atividade</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3 bg-surface-card px-4 py-1.5 rounded-full border border-primary/30 shadow-subtle">
+<div class="w-2.5 h-2.5 rounded-full pulse-dot-loading"></div>
+<span class="text-xs font-semibold text-primary uppercase tracking-wide">Buscando USB...</span>
+</div>
+<div class="flex items-center gap-3 text-text-muted">
+<button class="hover:bg-primary/10 p-2 rounded-full transition-colors text-text-muted hover:text-primary">
+<span class="material-icons text-[20px]">settings</span>
+</button>
+<button class="hover:bg-primary/10 p-2 rounded-full transition-colors text-text-muted hover:text-primary">
+<span class="material-icons text-[20px]">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-[#B08968] flex items-center justify-center text-[#1F1A17] font-bold text-sm shadow-md ring-2 ring-primary/40">
+                    F
+                </div>
+</div>
+</div>
+</header>
+<main class="flex-1 flex flex-col p-6 overflow-hidden bg-background-dark relative">
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 shrink-0">
+<div class="flex items-center gap-3 w-full md:w-auto">
+<div class="relative group w-full md:w-80">
+<span class="material-icons absolute left-3 top-2.5 text-text-muted group-focus-within:text-primary transition-colors text-xl">search</span>
+<input class="w-full bg-surface-card border border-primary/20 rounded-lg pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary text-text-main outline-none transition-all shadow-subtle placeholder-text-muted/50" placeholder="Buscar por título, autor..." type="text"/>
+</div>
+<button class="bg-surface-card border border-primary/20 hover:bg-surface-dark hover:border-primary/50 text-text-muted hover:text-primary px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors shadow-subtle">
+<span class="material-icons text-[18px]">filter_list</span>
+<span>Filtros</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary hover:bg-[#C2946A] text-[#1F1A17] px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors shadow-lg hover:shadow-glow shadow-primary/20">
+<span class="material-icons text-[18px]">add</span>
+<span>Adicionar Livro</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-card border border-primary/20 rounded-xl flex flex-col flex-1 overflow-hidden shadow-card card-gradient backdrop-blur-sm">
+<div class="grid grid-cols-12 gap-4 px-6 py-3 border-b border-primary/20 bg-surface-dark/50 text-xs font-bold text-text-muted uppercase tracking-wider items-center shrink-0">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">Capa</div>
+<div class="col-span-4 md:col-span-5">Título</div>
+<div class="col-span-3 md:col-span-3">Autor</div>
+<div class="col-span-1 text-center">Tipo</div>
+<div class="col-span-2 text-right pr-2">Ações</div>
+</div>
+<div class="overflow-y-auto flex-1 bg-transparent">
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<img alt="Book Cover" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw2mb69mNYWeyWCubfV82oIoohHK68-FjiSiW7EGSXV-gglUBg1SFj_253UiILfNk9MBKv_RTLfVzFapm3r9VFiKn8eyhNnP-ff9vGwkCaUEnZz-GarkMSpsy-nww2Od8XBaShbdygUklCiYL7tryGmSKAw0ZBzC-ehjO_d9HALLHBV4f7yO01C0RJN90kCj9Vg36ZPEBQ5EHeGEC6bNsgSG1PfpfYvbMTAB9e07DBo9cAv4_VUfxpmyEwfJ-BqqAmuvnF58ru89M"/>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">The King's Men (Tradução)</h3>
+<p class="text-xs text-text-muted mt-0.5 truncate hidden sm:block">All for the Game #3</p>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">Thicoss</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<img alt="Mutiny Cover" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWBZ7dw5o2oe1gv0dAmz5_9Bqs3DyhrcB2t5QefUiPfxL1XzoIjW3ySlsYrUZIX-A4gN8p6aaow5pD16D8bJ1wnm9nRQkwuYfUd65Fx-htilH0IZ8WiH_grp-WgTvhPpN4WTdOrsIDTviMZVPNFkcrSuF4CyBgO98vfnZF-lUBvB5GOSnLfpEdCseY7VhRPKDRvsL5wuOZwpEvFva2f8_DqddMYySS6T3aawYzmn2KgajoALuyRubIyaitkgcXxetvuHVc844Smzk"/>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Mutiny - A Historia do Bounty</h3>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">John Boyne</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<img alt="Dilema mortal Cover" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNyXYMj8THnFxTBkivxPd3Zz-2eHOCj6UUMPx4i541LB9UCmQ4mM4CPfCR3Aw-Ev6OJ7wh1ZjmiWN80ncr3aAlGe7_CGVGNDODzJ1aZrx51Sb7mXxxFajfygoqfJAS7oXL61xjdB5W-0nyjay-t3FWRXpF-6DRCdK3E146PpdSjMxlKCdNgkLAtFkJLiHomriS7p6kW2-doxbmWopybGvVZeOKDDTzEudc8O6zw1MlpKDQm2J1limV0c9mtBeqzpUeSXdfUIgDSZI"/>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Dilema mortal</h3>
+<p class="text-xs text-text-muted mt-0.5 truncate hidden sm:block">Série Mortal #12</p>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">J.D. Robb</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative flex items-center justify-center shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<span class="material-icons text-text-muted/50 text-xl">image_not_supported</span>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Imitação Mortal</h3>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">J. D. Robb</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<img alt="Testemunha Mortal Cover" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOxfS4l406qotVCSfFldA3-ZgdGWdcBNWMnw1yY1nB91hNCoOV7-Mb7skq16xPiLGCABF0YbMU8nCddyYAB_GIi-UsiQFgCp8rIhPvD02UmJjM7kYqgvUj0maK5pkYoIl-HdPdGevarnjBcpdeu7xlTV4aBtWuxIcoB5Kr5YD3CFfVtc7yqTf1VzktpKgCMdVdP3y2zCLIVPsJdS3dklAVvGxD5dXy7XrdAHRNhq5mWI9Uhg-Rj4TiGRnY1dA28J3BQMSSHu4CvRI"/>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Mortal: Livro 10 - Testemunha Mortal</h3>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">J. D. Robb (Nora Roberts)</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<img alt="Pureza Mortal Cover" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClRCGaA2l4aY7KkGPdC3HvZoQEpa4S-d4m0hzwWBcsdFae2RTqrqszUeZCq6GyDw8WVDC7-ZR5gUdpa0l2UQG2vTTHB7c1uvtTtYyRUzjfEOm6POsBWiGcXvRGyJ60R6BTmLnSjzpcAcMeSwKSswUM15yiMcvzlnS20VIUQ9dY3D8qjJi_91_83s1hLd-Oh4dnFEjz-kHGU4h1uVMnHEdpwd3bXGoVa1F6jRC1TMeYSjo63Rie603dZQ2YFIDo15uMfdbibrxzsRA"/>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Pureza Mortal</h3>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">J. D. Robb</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 border-b border-primary/10 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative flex items-center justify-center shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<span class="material-icons text-text-muted/50 text-xl">image_not_supported</span>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Sedução Mortal</h3>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">J. d. Robb</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+<div class="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-primary/5 transition-colors items-center group">
+<div class="col-span-1 flex items-center justify-center md:justify-start">
+<input class="rounded border-primary/40 text-primary focus:ring-primary bg-surface-dark w-4 h-4 cursor-pointer" type="checkbox"/>
+</div>
+<div class="col-span-1">
+<div class="w-10 h-14 bg-surface-dark rounded border border-primary/30 overflow-hidden relative shadow-sm group-hover:shadow-glow group-hover:border-primary transition-all duration-300">
+<img alt="Visão Mortal Cover" class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300 opacity-90 hover:opacity-100" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzXhaF_g18uNcTBPhjdJX8zKl9n_WCPqnxSHW_8KtRkAYmocRLFybKJmeSmvrAsj22xrsuMoEDX5CkLLrTYGaMD0iRJ3myVxKS47QglBP9yt_WoWSJpa2eerjQ5zl40FullSskonmjh9X0VHD00-3WJ1pQ2zhWuuJQGhljVpZY8UaHp51v7mCvHmfM1Ay2gLAkgLPqWKaL6AoPz0yRwkMraqU35JN9DgySvBLtyrwas_NwbkSXet26CvfHtuB-f2arePRYevXf5kg"/>
+</div>
+</div>
+<div class="col-span-4 md:col-span-5 pr-4">
+<h3 class="text-sm font-bold text-text-main truncate group-hover:text-primary transition-colors drop-shadow-sm">Visão Mortal</h3>
+</div>
+<div class="col-span-3 md:col-span-3">
+<span class="text-sm text-text-muted/80 font-medium">J. D. Robb</span>
+</div>
+<div class="col-span-1 flex justify-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary border border-primary/30 shadow-sm">
+                            EPUB
+                        </span>
+</div>
+<div class="col-span-2 flex justify-end gap-2 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors">
+                            Ler
+                        </button>
+<button class="text-primary hover:text-[#C2946A] text-xs font-semibold px-3 py-1.5 rounded-md hover:bg-primary/20 transition-colors flex items-center gap-1">
+                            Enviar
+                        </button>
+</div>
+</div>
+</div>
+<div class="bg-surface-dark/50 border-t border-primary/20 px-6 py-3 flex items-center justify-between shrink-0">
+<span class="text-xs text-text-muted font-medium">
+                    Mostrando 1-8 de 128 livros
+                </span>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded hover:bg-primary/20 text-text-muted disabled:opacity-50 transition-colors">
+<span class="material-icons text-lg">chevron_left</span>
+</button>
+<button class="p-1 rounded hover:bg-primary/20 text-text-muted transition-colors">
+<span class="material-icons text-lg">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<div class="absolute bottom-6 right-8 z-50 flex flex-col-reverse items-end gap-4" x-data="{ open: true }">
+<button @click="open = !open" aria-label="Toggle Theme Menu" class="w-14 h-14 bg-surface-card/90 backdrop-blur-md border border-primary/30 rounded-full shadow-fab hover:shadow-glow flex items-center justify-center text-primary transition-all duration-300 transform hover:scale-105 hover:bg-surface-dark z-50 group">
+<span :class="{'rotate-45': open}" class="material-icons text-2xl group-hover:rotate-45 transition-transform duration-300">palette</span>
+</button>
+<div :class="{'scale-100 opacity-100 translate-y-0': open, 'scale-90 opacity-0 translate-y-4 pointer-events-none': !open}" class="theme-panel rounded-2xl p-4 shadow-panel min-w-[280px] flex flex-col gap-3 transition-all duration-300 origin-bottom-right transform">
+<div class="flex items-center justify-between pb-2 border-b border-primary/10">
+<h3 class="text-sm font-bold text-text-main tracking-wide">Select Theme</h3>
+<span class="text-[10px] font-semibold text-primary uppercase bg-primary/10 px-2 py-0.5 rounded border border-primary/20">Preview</span>
+</div>
+<div class="grid grid-cols-1 gap-1">
+<button class="theme-option w-full flex items-center gap-3 p-2 rounded-xl group relative overflow-hidden border border-transparent hover:border-primary/20 text-left">
+<div class="w-10 h-10 rounded-full shadow-md bg-[#1e293b] border border-slate-600 relative shrink-0">
+<div class="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-slate-800/80"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main group-hover:text-primary transition-colors">Dark</span>
+<span class="text-[10px] text-text-muted">Deep slate &amp; blue tones</span>
+</div>
+</button>
+<button class="theme-option w-full flex items-center gap-3 p-2 rounded-xl group relative overflow-hidden border border-transparent hover:border-primary/20 text-left">
+<div class="w-10 h-10 rounded-full shadow-md bg-[#f8fafc] border border-gray-300 relative shrink-0">
+<div class="absolute inset-0 bg-gradient-to-br from-white to-gray-100"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main group-hover:text-primary transition-colors">Light</span>
+<span class="text-[10px] text-text-muted">Clean white &amp; gray</span>
+</div>
+</button>
+<button class="theme-option w-full flex items-center gap-3 p-2 rounded-xl group relative overflow-hidden border border-transparent hover:border-primary/20 text-left">
+<div class="w-10 h-10 rounded-full shadow-md bg-[#fdf2f8] border border-pink-200 relative shrink-0">
+<div class="absolute inset-0 bg-gradient-to-br from-pink-50 to-pink-100"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main group-hover:text-primary transition-colors">Pink</span>
+<span class="text-[10px] text-text-muted">Soft rose &amp; blush</span>
+</div>
+</button>
+<button class="theme-option w-full flex items-center gap-3 p-2 rounded-xl group relative overflow-hidden border border-transparent hover:border-primary/20 text-left">
+<div class="w-10 h-10 rounded-full shadow-md bg-[#fef3c7] border border-amber-300 relative shrink-0">
+<div class="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-100"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main group-hover:text-primary transition-colors">Sepia</span>
+<span class="text-[10px] text-text-muted">Warm paper &amp; amber</span>
+</div>
+</button>
+<button class="theme-option w-full flex items-center gap-3 p-2 rounded-xl group relative overflow-hidden border border-transparent hover:border-primary/20 text-left">
+<div class="w-10 h-10 rounded-full shadow-md bg-[#831843] border border-pink-700 relative shrink-0">
+<div class="absolute inset-0 bg-gradient-to-br from-pink-900 to-rose-800"></div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main group-hover:text-primary transition-colors">Pink Dark</span>
+<span class="text-[10px] text-text-muted">Bold magenta &amp; dark</span>
+</div>
+</button>
+<button class="theme-option active w-full flex items-center gap-3 p-2 rounded-xl group relative overflow-hidden border border-primary/40 text-left">
+<div class="w-10 h-10 rounded-full shadow-md bg-[#1F1A17] border border-primary relative shrink-0 ring-2 ring-primary/20 ring-offset-1 ring-offset-transparent">
+<div class="absolute inset-0 bg-gradient-to-br from-[#1F1A17] to-[#362B26]"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-icons text-primary text-sm font-bold">check</span>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold text-primary group-hover:text-primary transition-colors">Dark Sepia</span>
+<span class="text-[10px] text-primary/70">Classic rich chocolate</span>
+</div>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_rgba(212,163,115,0.8)]"></div>
+</button>
+</div>
+</div>
+</div>
+</main>
+<div class="hidden fixed inset-0 bg-[#1F1A17]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4" id="settings-modal">
+<div class="bg-surface-card w-full max-w-lg rounded-2xl shadow-2xl border border-primary/30 flex flex-col max-h-[90vh]">
+<div class="flex items-center justify-between p-6 border-b border-primary/20">
+<h2 class="text-xl font-bold text-text-main drop-shadow-sm">Configurações</h2>
+<button class="text-text-muted hover:text-primary transition-colors">
+<span class="material-icons">close</span>
+</button>
+</div>
+<div class="p-6 overflow-y-auto space-y-6">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-text-main">Pasta da Biblioteca (PC)</label>
+<div class="flex gap-2">
+<div class="flex-1 bg-surface-dark border border-primary/20 rounded-lg px-4 py-2.5 text-sm text-text-muted truncate font-mono shadow-inner-dark">
+                            C:\Users\frede\OneDrive\Documentos\Devs\Calibre
+                        </div>
+<button class="p-2.5 bg-surface-card border border-primary/20 rounded-lg hover:bg-primary/20 hover:border-primary/50 transition-all shadow-sm">
+<span class="material-icons text-text-muted text-lg group-hover:text-primary">folder_open</span>
+</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-text-main">Processamento Simultâneo (Threads)</label>
+<p class="text-xs text-text-muted/70">Quantos livros o sistema tentará escanear por vez. Mais threads = mais rápido, porém requer mais RAM e CPU. Recomendado: 2.</p>
+<input class="w-full bg-surface-dark border border-primary/20 rounded-lg px-4 py-2.5 text-sm text-text-main focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-shadow" type="number" value="4"/>
+</div>
+<div class="space-y-2">
+<label class="text-sm font-semibold text-text-main">Caminho Manual do Kindle (USB)</label>
+<p class="text-xs text-text-muted/70">Altere apenas se a detecção automática falhar.</p>
+<div class="flex gap-2">
+<div class="flex-1 bg-surface-dark border border-primary/20 rounded-lg px-4 py-2.5 text-sm text-text-muted truncate font-mono shadow-inner-dark">
+                           D:/documents
+                        </div>
+<button class="p-2.5 bg-surface-card border border-primary/20 rounded-lg hover:bg-primary/20 hover:border-primary/50 transition-all shadow-sm">
+<span class="material-icons text-text-muted text-lg group-hover:text-primary">folder_open</span>
+</button>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-primary/20 flex justify-end bg-surface-dark/30 rounded-b-2xl">
+<button class="bg-surface-card hover:bg-primary/20 text-text-main border border-primary/40 font-semibold py-2.5 px-6 rounded-lg shadow-sm hover:shadow-glow transition-all">
+                    Salvar e Re-escanear
+                </button>
+</div>
+</div>
+</div>
+</body></html>

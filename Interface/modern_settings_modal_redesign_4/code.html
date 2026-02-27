@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configurações - Library Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#5D4037", // Deep coffee brown
+                        "primary-dark": "#3E2723", // Darker coffee for hover
+                        "primary-light": "#D7CCC8", // Light coffee/beige
+                        "background-sepia": "#FAF3E0", // Warm cream background
+                        "surface-sepia": "#FFFDF5", // Very light cream for modal surface
+                        "border-sepia": "#D7CCC8", // Light brown border
+                        "text-brown": "#3E2723", // Rich dark brown for main text
+                        "text-sub-brown": "#5D4037", // Lighter brown for subtext
+                        "input-bg": "#FEFCF5", // Off-white/cream input bg
+                    },
+                    fontFamily: {
+                        display: ["Inter", "sans-serif"],
+                        body: ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.5rem",
+                        'xl': "1rem",
+                        '2xl': "1.25rem",
+                    },
+                },
+            },
+        };
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D7CCC8; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #A1887F; 
+        }
+    </style>
+</head>
+<body class="bg-background-sepia text-text-brown flex items-center justify-center min-h-screen p-4 transition-colors duration-300">
+<div class="fixed inset-0 bg-[#3E2723]/30 backdrop-blur-sm z-0"></div>
+<main class="relative z-10 w-full max-w-lg bg-surface-sepia rounded-2xl shadow-xl border border-stone-200 flex flex-col max-h-[90vh]">
+<header class="flex justify-between items-center px-6 py-5 border-b border-stone-200">
+<h1 class="text-xl font-bold text-primary">Configurações</h1>
+<button aria-label="Fechar" class="p-2 -mr-2 rounded-full hover:bg-stone-100 text-stone-400 hover:text-primary transition-colors">
+<span class="material-icons-round text-xl">close</span>
+</button>
+</header>
+<div class="flex-1 overflow-y-auto p-6 space-y-5">
+<div class="bg-input-bg border border-border-sepia rounded-xl p-5 shadow-sm">
+<label class="block text-sm font-semibold text-text-brown mb-3" for="library-path">
+                    Pasta da Biblioteca (PC)
+                </label>
+<div class="flex gap-2">
+<div class="relative flex-grow">
+<input class="w-full bg-white border border-border-sepia text-text-brown text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent block p-2.5 truncate font-mono shadow-sm placeholder-stone-400" id="library-path" readonly="" type="text" value="C:\Users\frede\OneDrive\Documentos\Devs\Calibre Library"/>
+</div>
+<button aria-label="Procurar pasta" class="flex items-center justify-center px-3 py-2 bg-white border border-border-sepia rounded-lg hover:bg-stone-50 hover:border-primary transition-all text-primary shadow-sm">
+<span class="material-icons-round text-lg">folder_open</span>
+</button>
+</div>
+</div>
+<div class="bg-input-bg border border-border-sepia rounded-xl p-5 shadow-sm">
+<label class="block text-sm font-semibold text-text-brown mb-1" for="threads">
+                    Processamento Simultâneo (Threads)
+                </label>
+<p class="text-xs text-text-sub-brown mb-3 leading-relaxed opacity-80">
+                    Quantos livros o sistema tentará escanear por vez. Mais threads = mais rápido, porém requer mais RAM e CPU. Recomendado: 2.
+                </p>
+<input class="w-full bg-white border border-border-sepia text-text-brown text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent block p-2.5 font-mono shadow-sm" id="threads" max="16" min="1" type="number" value="4"/>
+</div>
+<div class="bg-input-bg border border-border-sepia rounded-xl p-5 shadow-sm">
+<label class="block text-sm font-semibold text-text-brown mb-1" for="kindle-path">
+                    Caminho Manual do Kindle (USB)
+                </label>
+<p class="text-xs text-text-sub-brown mb-3 opacity-80">
+                    Altere apenas se a detecção automática falhar.
+                </p>
+<div class="flex gap-2">
+<input class="flex-grow bg-white border border-border-sepia text-text-brown text-sm rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent block p-2.5 font-mono shadow-sm" id="kindle-path" type="text" value="D:/documents"/>
+<button aria-label="Procurar pasta" class="flex items-center justify-center px-3 py-2 bg-white border border-border-sepia rounded-lg hover:bg-stone-50 hover:border-primary transition-all text-primary shadow-sm">
+<span class="material-icons-round text-lg">folder_open</span>
+</button>
+</div>
+</div>
+<div class="bg-[#F5F0E6] border border-stone-200 rounded-xl p-5 space-y-4 shadow-inner">
+<h3 class="text-sm font-semibold text-primary">Conexão e Preferências</h3>
+<div class="flex items-center justify-between">
+<span class="text-sm text-text-sub-brown">Auto-scan ao iniciar</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-stone-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-icons-round text-base text-stone-500">dark_mode</span>
+<span class="text-sm text-text-sub-brown">Modo Escuro</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" id="darkModeToggle" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-stone-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+<footer class="p-6 pt-2 pb-6 flex justify-end bg-stone-50/50 rounded-b-2xl border-t border-stone-200">
+<button class="bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 text-sm ring-2 ring-primary ring-opacity-50">
+                Salvar e Re-escanear
+            </button>
+</footer>
+</main>
+<script>
+        // Optional: Keep toggle logic if user wants to switch themes manually later
+        const toggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        });
+    </script>
+
+</body></html>
