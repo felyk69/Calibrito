@@ -53,11 +53,13 @@ class ReadingProgressModel(BaseModel):
     id: int
     profile_id: int
     book_id: int
-    cfi_location: str
+    cfi_location: Optional[str] = None
+    progress_percent: Optional[float] = None
     last_read: str
 
 class ReadingProgressRequest(BaseModel):
-    cfi_location: str
+    cfi_location: Optional[str] = None
+    progress_percent: Optional[float] = None
 
 class StartScanRequest(BaseModel):
     folder_path: Optional[str] = None

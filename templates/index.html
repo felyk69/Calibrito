@@ -231,6 +231,19 @@
     <input type="hidden" id="detectedKindlePath" value="">
 
     <!-- Header Fixo -->
+    <!-- Edit Mode Banner (fixed top) -->
+    <div id="editModeBanner"
+        class="hidden sticky top-0 z-50 bg-orange-500/15 border-b border-orange-500/30 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 py-1.5 flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span class="text-xs font-semibold text-orange-300 tracking-wide">MODO DE EDIÇÃO ATIVADO</span>
+            <span class="text-[10px] text-orange-400/60">— clique no ✏️ novamente para sair</span>
+        </div>
+    </div>
+
     <header id="mainHeader"
         class="sticky top-0 z-40 border-b border-darkborder glass-header shadow-lg shadow-black/20 transition-colors duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -424,6 +437,29 @@
         </div>
     </header>
 
+    <!-- Maintenance Tools Bar (only visible in edit mode) -->
+    <div id="maintenanceTools" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+        <div class="flex items-center gap-3 bg-orange-500/5 border border-orange-500/20 rounded-xl px-4 py-2">
+            <span class="text-xs text-orange-400 font-semibold uppercase tracking-wider">Ferramentas:</span>
+            <button onclick="autoRenameAll()" id="btnAutoRename"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 hover:text-orange-200 border border-orange-500/20 rounded-lg text-xs font-medium transition-all">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                Auto-Renomear Todos
+            </button>
+            <button onclick="scanDuplicates()" id="btnDuplicates"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 hover:text-orange-200 border border-orange-500/20 rounded-lg text-xs font-medium transition-all">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Buscar Duplicatas
+            </button>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -519,6 +555,42 @@
                 </svg>
                 <span>Enviar para Kindle</span>
             </button>
+        </div>
+    </div>
+
+    <!-- Duplicates Modal -->
+    <div id="duplicatesModal"
+        class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-200">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeDuplicatesModal()"></div>
+        <div class="bg-darkcard border border-darkborder rounded-2xl shadow-2xl w-full max-w-5xl p-6 transform scale-95 transition-all duration-200 relative flex flex-col max-h-[85vh]"
+            id="duplicatesContent">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                    <h2 class="text-lg font-bold text-white">🔍 Duplicatas</h2>
+                    <span id="dupSummary"
+                        class="text-xs text-gray-500 bg-darkborder/50 px-2 py-0.5 rounded-full"></span>
+                    <button onclick="keepBestInAll()"
+                        class="text-[11px] text-green-400 hover:text-green-300 border border-green-500/20 hover:border-green-500/40 px-2.5 py-1 rounded-lg transition-all flex items-center gap-1">
+                        ✔ Manter melhor em todos
+                    </button>
+                </div>
+                <button onclick="closeDuplicatesModal()" class="text-gray-500 hover:text-white text-xl">✕</button>
+            </div>
+            <div id="duplicatesList" class="flex-1 overflow-y-auto space-y-6 pr-1">
+                <!-- JS fills this -->
+            </div>
+            <!-- Bulk action footer -->
+            <div id="dupFooter" class="hidden border-t border-darkborder mt-4 pt-4 flex items-center justify-between">
+                <span class="text-sm text-gray-400"><span id="dupSelectedCount">0</span> marcados para exclusão</span>
+                <button onclick="deleteSelectedDuplicates()" id="btnDeleteSelectedDups"
+                    class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl text-sm transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Excluir Marcados
+                </button>
+            </div>
         </div>
     </div>
 
@@ -1047,7 +1119,7 @@
                         <button onclick="openEditModal(${book.id}, event)" class="absolute bottom-2 left-2 p-1.5 bg-black/60 hover:bg-blue-600 text-white rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                         </button>` : `
-                        ${book.file_type.toLowerCase() === '.epub' ? `<button onclick="openReader(${book.id}, '${book.title.replace(/'/g, "\\'")}', event)" class="absolute bottom-2 left-2 p-1.5 bg-kindle/80 hover:bg-kindle text-white rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity" title="Ler agora"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></button>` : ''}
+                        ${['.epub', '.mobi', '.azw3', '.pdf', '.fb2', '.cbz'].includes(book.file_type.toLowerCase()) ? `<button onclick="openReader(${book.id}, event)" class="absolute bottom-2 left-2 p-1.5 bg-kindle/80 hover:bg-kindle text-white rounded-lg backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity" title="Ler agora"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></button>` : ''}
                         `}
                     </div>
                     <div class="p-3">
@@ -1083,7 +1155,7 @@
                     <td class="py-3 px-6 text-right">
                          ${maintenanceMode ?
                         `<button onclick="openEditModal(${book.id}, event)" class="text-gray-500 hover:text-white mr-3">Editar</button>` :
-                        `${book.file_type.toLowerCase() === '.epub' ? `<button onclick="openReader(${book.id}, '${book.title.replace(/'/g, "\\'")}', event)" class="text-kindle hover:text-white font-medium text-xs mr-3">Ler</button>` : ''}
+                        `${['.epub', '.mobi', '.azw3', '.pdf', '.fb2', '.cbz'].includes(book.file_type.toLowerCase()) ? `<button onclick="openReader(${book.id}, event)" class="text-kindle hover:text-white font-medium text-xs mr-3">Ler</button>` : ''}
                         <button onclick="sendToKindle(${book.id}, this, event)" class="text-kindle hover:text-white font-medium text-xs">Enviar</button>`
                     }
                     </td>
@@ -1321,7 +1393,8 @@
                 header.classList.add('border-b-2', 'border-orange-500', 'shadow-orange-500/10', 'bg-orange-900/10');
                 header.classList.remove('border-darkborder');
 
-                showToast("Modo de Edição Ativado", "warning", true);
+                document.getElementById('editModeBanner').classList.remove('hidden');
+                document.body.style.backgroundColor = '#1a1410';
             } else {
                 btn.classList.remove('bg-orange-500/10', 'text-orange-400', 'border', 'border-orange-500/20');
                 btn.classList.add('text-gray-500', 'border-transparent');
@@ -1330,10 +1403,15 @@
                 header.classList.remove('border-b-2', 'border-orange-500', 'shadow-orange-500/10', 'bg-orange-900/10');
                 header.classList.add('border-darkborder');
 
-                showToast("Modo de Edição Desativado", "info", false);
+                document.getElementById('editModeBanner').classList.add('hidden');
+                document.body.style.backgroundColor = '';
             }
             updateActionBar();
             renderBooks();
+
+            // Show/hide maintenance tools bar
+            const toolsBar = document.getElementById('maintenanceTools');
+            if (toolsBar) toolsBar.classList.toggle('hidden', !maintenanceMode);
         }
 
         // --- Connection Logic ---
@@ -1766,106 +1844,10 @@
         });
 
 
-        // --- Web Reader Logic (epub.js) ---
-        async function openReader(bookId, title, e) {
+        // --- Web Reader Logic (foliate-js) ---
+        function openReader(bookId, e) {
             if (e) e.stopPropagation();
-            if (!activeProfileId) return showToast("Selecione um perfil primeiro.", "warning");
-
-            readerCurrentBookId = bookId;
-            document.getElementById('readerTitle').innerText = title;
-            document.getElementById('readerModal').classList.remove('opacity-0', 'pointer-events-none');
-
-            // Show loading state in viewer
-            const viewer = document.getElementById('viewer');
-            viewer.innerHTML = '<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-kindle mx-auto"></div>';
-
-            try {
-                // Fetch progress first
-                let startCfi = null;
-                const progRes = await fetch(`/api/books/${bookId}/progress?profile_id=${activeProfileId}`);
-                if (progRes.ok) {
-                    const progData = await progRes.json();
-                    if (progData.cfi_location) startCfi = progData.cfi_location;
-                }
-
-                // Initialize ePub
-                const bookUrl = `/api/books/${bookId}/file`;
-                epubBook = ePub(bookUrl);
-
-                viewer.innerHTML = ''; // clear loading
-
-                // Paginated reading
-                epubRendition = epubBook.renderTo("viewer", {
-                    width: "100%",
-                    height: "100%",
-                    spread: "none"
-                });
-
-                applyReaderTheme();
-
-                if (startCfi) {
-                    epubRendition.display(startCfi);
-                } else {
-                    epubRendition.display();
-                }
-
-                // Setup Navigation
-                epubRendition.on("relocated", function (location) {
-                    // Save progress
-                    saveReaderProgress(location.start.cfi);
-                    // Update progress bar
-                    updateReaderProgressBar();
-                });
-
-                // Keyboard arrows integration for reader
-                epubRendition.on('keyup', function (e) {
-                    if ((e.keyCode || e.which) == 37) { epubRendition.prev(); }
-                    if ((e.keyCode || e.which) == 39) { epubRendition.next(); }
-                });
-
-                // Generate locations for progress bar (takes a moment)
-                epubBook.ready.then(() => {
-                    return epubBook.locations.generate(1600); // 1600 chars per page roughly
-                }).then(() => {
-                    updateReaderProgressBar();
-                });
-
-            } catch (err) {
-                console.error(err);
-                viewer.innerHTML = '<p class="text-red-500">Erro ao carregar o livro. Verifique se o arquivo EPUB é válido.</p>';
-            }
-        }
-
-        function closeReader() {
-            document.getElementById('readerModal').classList.add('opacity-0', 'pointer-events-none');
-            if (epubBook) {
-                epubBook.destroy();
-                epubBook = null;
-                epubRendition = null;
-            }
-            document.getElementById('viewer').innerHTML = '';
-        }
-
-        function readerNavigate(dir) {
-            if (!epubRendition) return;
-            if (dir === 1) {
-                epubRendition.next();
-            } else {
-                epubRendition.prev();
-            }
-        }
-
-        async function saveReaderProgress(cfi) {
-            if (!readerCurrentBookId || !activeProfileId) return;
-            try {
-                await fetch(`/api/books/${readerCurrentBookId}/progress?profile_id=${activeProfileId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cfi_location: cfi })
-                });
-            } catch (e) {
-                console.error("Failed to save progress", e);
-            }
+            window.open(`/reader?id=${bookId}`, '_blank');
         }
 
         function updateReaderProgressBar() {
@@ -1897,6 +1879,225 @@
                     "a": { "color": "#005a7a" }
                 });
                 epubRendition.themes.select("light");
+            }
+        }
+
+        // --- Auto-Rename & Duplicates ---
+        async function autoRenameAll() {
+            const btn = document.getElementById('btnAutoRename');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-pulse">Renomeando...</span>';
+
+            try {
+                const res = await fetch('/api/books/auto-rename', { method: 'POST' });
+                const data = await res.json();
+
+                let msg = `✅ ${data.renamed} renomeados, ${data.skipped} já corretos.`;
+                if (data.errors.length > 0) {
+                    msg += ` ⚠️ ${data.errors.length} erro(s).`;
+                    console.warn('Rename errors:', data.errors);
+                }
+                showToast(msg, data.errors.length > 0 ? 'warning' : 'success');
+
+                if (data.renamed > 0) loadBooks();
+            } catch (e) {
+                showToast('Erro ao renomear: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        }
+
+        let dupDeleteSet = new Set();
+
+        async function scanDuplicates() {
+            const btn = document.getElementById('btnDuplicates');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-pulse">Escaneando...</span>';
+
+            try {
+                const res = await fetch('/api/books/duplicates');
+                const data = await res.json();
+
+                if (data.total_groups === 0) {
+                    showToast('Nenhuma duplicata encontrada! 🎉', 'success');
+                    return;
+                }
+
+                dupDeleteSet.clear();
+                const list = document.getElementById('duplicatesList');
+                list.innerHTML = '';
+
+                let totalBooks = 0;
+                data.groups.forEach(g => totalBooks += g.books.length);
+                document.getElementById('dupSummary').textContent = `${data.total_groups} grupo(s), ${totalBooks} livros`;
+
+                data.groups.forEach((group, gi) => {
+                    const section = document.createElement('div');
+                    section.className = 'bg-[#1a1a1f] border border-darkborder rounded-xl p-4';
+
+                    const badge = group.reason === 'hash'
+                        ? '<span class="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full font-medium">Arquivo Idêntico</span>'
+                        : '<span class="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full font-medium">Metadados Similares</span>';
+
+                    const header = document.createElement('div');
+                    header.className = 'flex items-center gap-2 mb-3';
+                    header.innerHTML = `${badge} <span class="text-xs text-gray-500">${group.detail}</span>
+                        <button onclick="keepOnlyOne(${gi})" class="ml-auto text-[11px] text-green-400 hover:text-green-300 border border-green-500/20 hover:border-green-500/40 px-2 py-0.5 rounded-lg transition-all">✔ Manter 1º, excluir resto</button>`;
+                    section.appendChild(header);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3';
+                    grid.id = `dup-group-${gi}`;
+
+                    group.books.forEach((b, bi) => {
+                        const card = document.createElement('div');
+                        card.className = 'relative bg-[#121215] rounded-xl p-3 flex flex-col items-center text-center group cursor-pointer transition-all border-2 border-transparent hover:border-gray-600';
+                        card.id = `dup-card-${b.id}`;
+                        card.dataset.groupIndex = gi;
+                        card.dataset.bookIndex = bi;
+                        card.dataset.bookId = b.id;
+                        card.onclick = () => toggleDupSelect(b.id, card);
+
+                        card.innerHTML = `
+                            <div class="absolute top-2 left-2 z-10">
+                                <div class="w-5 h-5 rounded border-2 border-gray-600 flex items-center justify-center transition-all dup-check" id="dup-chk-${b.id}">
+                                </div>
+                            </div>
+                            ${bi === 0 ? '<span class="absolute top-2 right-2 text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-medium">Original</span>' : ''}
+                            ${b.cover_path
+                                ? `<img src="${b.cover_path}" class="w-16 h-24 object-cover rounded-lg shadow-lg mb-2 pointer-events-none" onerror="this.style.display='none'">`
+                                : `<div class="w-16 h-24 bg-darkborder rounded-lg mb-2 flex items-center justify-center pointer-events-none"><svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>`
+                            }
+                            <div class="text-xs font-medium text-white truncate w-full pointer-events-none">${b.title}</div>
+                            <div class="text-[10px] text-gray-400 truncate w-full pointer-events-none">${b.author}</div>
+                            <span class="mt-1 text-[10px] px-1.5 py-0.5 rounded bg-darkborder text-gray-400 pointer-events-none">${b.file_type}</span>
+                        `;
+                        grid.appendChild(card);
+                    });
+
+                    section.appendChild(grid);
+                    list.appendChild(section);
+                });
+
+                // Store groups for keepOnlyOne
+                window._dupGroups = data.groups;
+
+                updateDupFooter();
+
+                const modal = document.getElementById('duplicatesModal');
+                modal.classList.remove('pointer-events-none', 'opacity-0');
+                document.getElementById('duplicatesContent').classList.remove('scale-95');
+
+            } catch (e) {
+                showToast('Erro ao buscar duplicatas: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            }
+        }
+
+        function toggleDupSelect(id, card) {
+            if (dupDeleteSet.has(id)) {
+                dupDeleteSet.delete(id);
+                card.classList.remove('border-red-500', 'bg-red-500/5');
+                card.classList.add('border-transparent');
+                const chk = document.getElementById(`dup-chk-${id}`);
+                chk.innerHTML = '';
+                chk.classList.remove('bg-red-500', 'border-red-500');
+                chk.classList.add('border-gray-600');
+            } else {
+                dupDeleteSet.add(id);
+                card.classList.add('border-red-500', 'bg-red-500/5');
+                card.classList.remove('border-transparent');
+                const chk = document.getElementById(`dup-chk-${id}`);
+                chk.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+                chk.classList.add('bg-red-500', 'border-red-500');
+                chk.classList.remove('border-gray-600');
+            }
+            updateDupFooter();
+        }
+
+        function keepBestInAll() {
+            if (!window._dupGroups) return;
+            window._dupGroups.forEach((g, i) => keepOnlyOne(i));
+        }
+
+        function keepOnlyOne(groupIndex) {
+            const group = window._dupGroups[groupIndex];
+            if (!group) return;
+            // Keep first, mark rest for deletion
+            group.books.forEach((b, i) => {
+                const card = document.getElementById(`dup-card-${b.id}`);
+                if (!card) return;
+                if (i === 0) {
+                    // Deselect the first one (keep it)
+                    dupDeleteSet.delete(b.id);
+                    card.classList.remove('border-red-500', 'bg-red-500/5');
+                    card.classList.add('border-green-500', 'bg-green-500/5');
+                    const chk = document.getElementById(`dup-chk-${b.id}`);
+                    chk.innerHTML = '';
+                    chk.classList.remove('bg-red-500', 'border-red-500');
+                    chk.classList.add('border-green-500');
+                } else {
+                    // Select for deletion
+                    dupDeleteSet.add(b.id);
+                    card.classList.add('border-red-500', 'bg-red-500/5');
+                    card.classList.remove('border-transparent', 'border-green-500', 'bg-green-500/5');
+                    const chk = document.getElementById(`dup-chk-${b.id}`);
+                    chk.innerHTML = '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+                    chk.classList.add('bg-red-500', 'border-red-500');
+                    chk.classList.remove('border-gray-600', 'border-green-500');
+                }
+            });
+            updateDupFooter();
+        }
+
+        function updateDupFooter() {
+            const footer = document.getElementById('dupFooter');
+            const count = dupDeleteSet.size;
+            document.getElementById('dupSelectedCount').textContent = count;
+            footer.classList.toggle('hidden', count === 0);
+        }
+
+        function closeDuplicatesModal() {
+            const modal = document.getElementById('duplicatesModal');
+            modal.classList.add('pointer-events-none', 'opacity-0');
+            document.getElementById('duplicatesContent').classList.add('scale-95');
+            dupDeleteSet.clear();
+        }
+
+        async function deleteSelectedDuplicates() {
+            if (dupDeleteSet.size === 0) return;
+            if (!confirm(`Excluir ${dupDeleteSet.size} livro(s)? Os arquivos serão movidos para a lixeira.`)) return;
+
+            const btn = document.getElementById('btnDeleteSelectedDups');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-pulse">Excluindo...</span>';
+
+            try {
+                const res = await fetch('/api/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: [...dupDeleteSet], permanent: false })
+                });
+                if (res.ok) {
+                    dupDeleteSet.forEach(id => {
+                        const card = document.getElementById(`dup-card-${id}`);
+                        if (card) { card.style.opacity = '0.2'; card.style.pointerEvents = 'none'; }
+                    });
+                    showToast(`${dupDeleteSet.size} duplicata(s) excluída(s)!`, 'success');
+                    dupDeleteSet.clear();
+                    updateDupFooter();
+                    loadBooks();
+                }
+            } catch (e) {
+                showToast('Erro: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Excluir Marcados';
             }
         }
 

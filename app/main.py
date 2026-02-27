@@ -46,3 +46,7 @@ def shutdown():
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/reader", response_class=HTMLResponse)
+async def reader(request: Request):
+    return templates.TemplateResponse("reader.html", {"request": request})

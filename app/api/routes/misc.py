@@ -100,25 +100,26 @@ def get_reading_progress(profile_id: int):
         return [dict(row) for row in rows]
 
 @router.get("/books/{book_id}/progress")
-def get_book_progress(book_id: int, profile_id: int):
+def get_book_progress(book_id: int, profile_id: int = 1):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT cfi_location FROM reading_progress WHERE book_id = ? AND profile_id = ?", (book_id, profile_id))
+        cursor.execute("SELECT cfi_location, progress_percent FROM reading_progress WHERE book_id = ? AND profile_id = ?", (book_id, profile_id))
         row = cursor.fetchone()
         if row:
-            return {"cfi_location": row[0]}
-        return {"cfi_location": None}
+            return {"cfi_location": row[0], "progress_percent": row[1]}
+        return {"cfi_location": None, "progress_percent": None}
 
 @router.post("/books/{book_id}/progress")
-def save_book_progress(book_id: int, profile_id: int, req: ReadingProgressRequest):
+def save_book_progress(book_id: int, req: ReadingProgressRequest, profile_id: int = 1):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO reading_progress (profile_id, book_id, cfi_location, last_read)
-            VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+            INSERT INTO reading_progress (profile_id, book_id, cfi_location, progress_percent, last_read)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
             ON CONFLICT(profile_id, book_id) DO UPDATE SET 
-            cfi_location=excluded.cfi_location, 
+            cfi_location=excluded.cfi_location,
+            progress_percent=excluded.progress_percent,
             last_read=CURRENT_TIMESTAMP
-        ''', (profile_id, book_id, req.cfi_location))
+        ''', (profile_id, book_id, req.cfi_location, req.progress_percent))
         conn.commit()
     return {"status": "success"}

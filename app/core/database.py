@@ -61,5 +61,11 @@ def init_db():
                 cursor.execute(f"ALTER TABLE books ADD COLUMN {col} {col_type}")
             except sqlite3.OperationalError:
                 pass
+
+        # Coluna de percentual de progresso (para formatos não-EPUB)
+        try:
+            cursor.execute("ALTER TABLE reading_progress ADD COLUMN progress_percent REAL")
+        except sqlite3.OperationalError:
+            pass
                 
         conn.commit()
