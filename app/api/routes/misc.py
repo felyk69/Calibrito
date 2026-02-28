@@ -10,6 +10,9 @@ from app.models.schemas import SettingsRequest, StartScanRequest, ProfileModel, 
 from app.services.book_service import scan_books
 from app.services.device_service import detect_device
 from app.services.watchdog_service import restart_watchdog
+from app.core.logger import get_logger
+
+logger = get_logger("routes.misc")
 
 router = APIRouter(prefix="/api", tags=["Misc"])
 
@@ -26,13 +29,13 @@ def pick_folder():
     root.withdraw()
     root.attributes('-topmost', True)
     
-    folder_path = filedialog.askdirectory(parent=root, title="Selecione a pasta de destino do KOReader")
+    folder_path = filedialog.askdirectory(parent=root, title="Select KOReader destination folder")
     root.destroy()
     
     if folder_path:
         return {"status": "success", "path": folder_path.replace('\\', '/')}
     else:
-        raise HTTPException(status_code=400, detail="Nenhuma pasta selecionada.")
+        raise HTTPException(status_code=400, detail="No folder selected.")
 
 @router.get("/settings")
 def get_settings():
@@ -44,15 +47,15 @@ def get_settings():
 @router.put("/settings")
 def save_settings(req: SettingsRequest):
     if not os.path.exists(req.books_folder) or not os.path.isdir(req.books_folder):
-        raise HTTPException(status_code=400, detail="A pasta informada não existe ou é inválida.")
+        raise HTTPException(status_code=400, detail="The specified folder does not exist or is invalid.")
     
     settings = {}
     if os.path.exists(SETTINGS_FILE):
         try:
             with open(SETTINGS_FILE, "r", encoding="utf-8") as f:
                 settings = json.load(f)
-        except:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            logger.warning("Failed to read existing settings: %s", e)
             
     settings["books_folder"] = req.books_folder
     settings["scanner_threads"] = req.scanner_threads
@@ -67,7 +70,7 @@ def save_settings(req: SettingsRequest):
 @router.post("/start-scan")
 def start_scan(req: StartScanRequest):
     threading.Thread(target=scan_books, args=(req.folder_path,), daemon=True).start()
-    return {"status": "success", "message": "Varredura iniciada em segundo plano."}
+    return {"status": "success", "message": "Scan started in background."}
 
 @router.get("/profiles", response_model=List[ProfileModel])
 def get_profiles():
@@ -88,7 +91,7 @@ def create_profile(req: ProfileCreateRequest):
             profile_id = cursor.lastrowid
             return {"id": profile_id, "name": req.name, "avatar": req.avatar}
         except sqlite3.IntegrityError:
-            raise HTTPException(status_code=400, detail="Perfil com esse nome já existe.")
+            raise HTTPException(status_code=400, detail="A profile with this name already exists.")
 
 @router.get("/profiles/{profile_id}/progress", response_model=List[ReadingProgressModel])
 def get_reading_progress(profile_id: int):

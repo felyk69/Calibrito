@@ -9,13 +9,16 @@ import mobi
 import xml.etree.ElementTree as ET
 import threading
 import queue
-from app.core.config import DB_FILE, COVERS_FOLDER, get_books_folder, get_scanner_threads
+from app.core.config import DB_FILE, COVERS_FOLDER, VALID_EXTENSIONS, get_books_folder, get_scanner_threads
 from app.core.events import notify_clients
+from app.core.logger import get_logger
+
+logger = get_logger("scanner")
 
 def process_book(file_path, file, ext):
-    """Processa um único livro: extrai metadados, capa e salva no DB."""
+    """Process a single book: extract metadata, cover, and save to DB."""
     title = file
-    author = "Desconhecido"
+    author = "Unknown"
     cover_path = None
     try:
         if ext == '.pdf':
@@ -44,73 +47,59 @@ def process_book(file_path, file, ext):
                         pix = None
                         page = None
                         
-                        cover_filename = hashlib.md5(file_path.encode('utf-8')).hexdigest() + ".jpg"
+                        cover_filename = hashlib.sha256(file_path.encode('utf-8')).hexdigest() + ".jpg"
                         cover_full_path = os.path.join(COVERS_FOLDER, cover_filename)
                         with open(cover_full_path, "wb") as f:
                             f.write(cover_bytes)
                         cover_path = f"/covers/{cover_filename}"
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("Failed to extract PDF cover from %s: %s", file, e)
         elif ext in ['.mobi', '.azw3']:
-            print(f"[Scanner] Analisando arquivo s/ metadados ({ext}): {file}", flush=True)
+            logger.debug("Extracting metadata from %s file: %s", ext, file)
             temp_dir, extracted_filepath = mobi.extract(file_path)
             
             for root_dir, local_dirs, local_files in os.walk(temp_dir):
                 for f_name in local_files:
                     if f_name.endswith('.opf'):
-                        caminho_opf = os.path.join(root_dir, f_name)
+                        opf_path = os.path.join(root_dir, f_name)
                         try:
-                            tree = ET.parse(caminho_opf)
+                            tree = ET.parse(opf_path)
                             root_xml = tree.getroot()
                             for elem in root_xml.iter():
                                 if 'title' in elem.tag.lower() and elem.text:
                                     title = re.sub(r'[\\/*?:"<>|]', "", str(elem.text)).strip()
                                 if 'creator' in elem.tag.lower() and elem.text:
                                     author = str(elem.text).strip()
-                        except Exception:
-                            pass
+                        except ET.ParseError as e:
+                            logger.warning("Failed to parse OPF %s: %s", opf_path, e)
                     
                     elif f_name.lower().endswith(('.jpg', '.jpeg', '.png')) and 'cover' in f_name.lower():
-                        caminho_capa_temp = os.path.join(root_dir, f_name)
+                        temp_cover_path = os.path.join(root_dir, f_name)
                         if not cover_path:
-                            cover_filename = hashlib.md5(file_path.encode('utf-8')).hexdigest() + ".jpg"
+                            cover_filename = hashlib.sha256(file_path.encode('utf-8')).hexdigest() + ".jpg"
                             cover_full_path = os.path.join(COVERS_FOLDER, cover_filename)
-                            shutil.copy(caminho_capa_temp, cover_full_path)
+                            shutil.copy(temp_cover_path, cover_full_path)
                             cover_path = f"/covers/{cover_filename}"
             
             try:
                 shutil.rmtree(temp_dir)
-            except Exception:
-                pass
+            except OSError as e:
+                logger.warning("Failed to clean temp dir %s: %s", temp_dir, e)
         else:
             meta = ebookmeta.get_metadata(file_path)
             title = meta.title if meta.title else os.path.splitext(file)[0]
             title = re.sub(r'^\(.*?\)\s*', '', title)
-            author = ", ".join(meta.author_list) if meta.author_list else "Desconhecido"
+            author = ", ".join(meta.author_list) if meta.author_list else "Unknown"
             
             if meta.cover_image_data:
-                cover_filename = hashlib.md5(file_path.encode('utf-8')).hexdigest() + ".jpg"
+                cover_filename = hashlib.sha256(file_path.encode('utf-8')).hexdigest() + ".jpg"
                 cover_full_path = os.path.join(COVERS_FOLDER, cover_filename)
                 with open(cover_full_path, "wb") as f:
                     f.write(meta.cover_image_data)
                 cover_path = f"/covers/{cover_filename}"
             
     except Exception as e:
-        pass
-    
-    dir_name = os.path.dirname(file_path)
-    safe_title = re.sub(r'[<>:"/\\|?*]', '', title)
-    safe_author = re.sub(r'[<>:"/\\|?*]', '', author)
-    new_filename = f"{safe_author} - {safe_title}{ext}"
-    new_path = os.path.join(dir_name, new_filename)
-    
-    if new_path != file_path and not os.path.exists(new_path):
-        try:
-            os.rename(file_path, new_path)
-            file_path = new_path
-        except Exception:
-            pass
-            
+        logger.error("Failed to extract metadata from %s: %s", file, e)
     with sqlite3.connect(DB_FILE, timeout=10.0) as conn:
         cursor = conn.cursor()
         cursor.execute('''
@@ -120,17 +109,14 @@ def process_book(file_path, file, ext):
         conn.commit()
 
 def scan_books(target_folder: str = None):
-    """Varre a pasta local de ebooks e insere novos arquivos no SQLite."""
+    """Scan the local ebooks folder and insert new files into SQLite."""
     books_folder = target_folder if target_folder else get_books_folder()
     
     if not os.path.exists(books_folder):
         os.makedirs(books_folder, exist_ok=True)
         return
 
-    valid_extensions = (
-        '.epub', '.mobi', '.azw3', '.azw', '.kfx', 
-        '.pdf', '.cbz', '.cbr', '.djvu'
-    )
+    valid_extensions = VALID_EXTENSIONS
     
     files_to_process = []
 
@@ -149,7 +135,7 @@ def scan_books(target_folder: str = None):
 
     if files_to_process:
         threads_count = get_scanner_threads()
-        print(f"[Scanner] Processando {len(files_to_process)} novos arquivos usando {threads_count} threads...", flush=True)
+        logger.info("Processing %d new files using %d threads...", len(files_to_process), threads_count)
         
         q = queue.Queue()
         
@@ -161,7 +147,7 @@ def scan_books(target_folder: str = None):
                 try:
                     process_book(*item)
                 except Exception as e:
-                    print(f"[Scanner] Erro ao processar livro {e}", flush=True)
+                    logger.error("Error processing book: %s", e)
                 finally:
                     q.task_done()
                     

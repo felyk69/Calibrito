@@ -2,14 +2,14 @@ import asyncio
 from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app.core.events import clients
+from app.core.events import add_client, remove_client
 
 router = APIRouter(prefix="/api", tags=["Events"])
 
 @router.get("/events")
 async def sse_events(request: Request):
     queue = asyncio.Queue()
-    clients.add(queue)
+    add_client(queue)
     
     async def event_generator():
         try:
@@ -24,6 +24,6 @@ async def sse_events(request: Request):
         except asyncio.CancelledError:
             pass
         finally:
-            clients.remove(queue)
+            remove_client(queue)
             
     return StreamingResponse(event_generator(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive"})

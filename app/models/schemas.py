@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel
-from app.core.config import KINDLE_DOCUMENTS_FOLDER
+from app.core.config import get_kindle_folder
 
 class BookModel(BaseModel):
     id: int
@@ -18,7 +18,7 @@ class BookModel(BaseModel):
 
 class SendBookRequest(BaseModel):
     id: int
-    kindle_path: str = KINDLE_DOCUMENTS_FOLDER
+    kindle_path: str = ""
 
 class UpdateBookRequest(BaseModel):
     title: str

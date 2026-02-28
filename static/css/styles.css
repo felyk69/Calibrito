@@ -1,0 +1,188 @@
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0f0f0f;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #444;
+}
+
+.book-cover-container {
+    aspect-ratio: 2/3;
+    overflow: hidden;
+    position: relative;
+}
+
+.glass-header {
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-panel {
+    background: rgba(24, 24, 27, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* --- THEME ENGINE --- */
+/* Light Theme Overrides */
+:root[data-theme="light"] {
+    /* Backgrounds */
+    --tw-bg-opacity: 1;
+    --color-darkbg: #f3f4f6 !important;
+    /* gray-100 */
+    --color-darkcard: #ffffff !important;
+    /* white */
+    --color-darkborder: #e5e7eb !important;
+    /* gray-200 */
+
+    /* Text elements override via cascade */
+    color: #1f2937 !important;
+    /* text-gray-800 */
+}
+
+:root[data-theme="light"] body {
+    background-color: #f3f4f6 !important;
+}
+
+:root[data-theme="light"] .bg-darkbg {
+    background-color: #f3f4f6 !important;
+}
+
+:root[data-theme="light"] .bg-darkcard {
+    background-color: #ffffff !important;
+}
+
+:root[data-theme="light"] .border-darkborder {
+    border-color: #e5e7eb !important;
+}
+
+:root[data-theme="light"] .text-gray-200,
+:root[data-theme="light"] .text-gray-300 {
+    color: #111827 !important;
+}
+
+:root[data-theme="light"] .text-gray-400,
+:root[data-theme="light"] .text-gray-500 {
+    color: #4b5563 !important;
+}
+
+:root[data-theme="light"] .glass-header {
+    background: rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="light"] .glass-panel {
+    background: rgba(255, 255, 255, 0.95) !important;
+}
+
+:root[data-theme="light"] .bg-\[\#111\] {
+    background-color: #e5e7eb !important;
+}
+
+:root[data-theme="light"] .bg-\[\#222\] {
+    background-color: #f3f4f6 !important;
+}
+
+:root[data-theme="light"] .bg-\[\#1c1c1f\] {
+    background-color: #f9fafb !important;
+}
+
+:root[data-theme="light"] .bg-\[\#2a2a2a\] {
+    background-color: #d1d5db !important;
+    color: #111827 !important;
+}
+
+/* Pink Theme Overrides */
+:root[data-theme="pink"] {
+    --color-kindle: #ec4899 !important;
+    /* pink-500 */
+    --color-kindlehover: #db2777 !important;
+    /* pink-600 */
+}
+
+:root[data-theme="pink"] body {
+    background-color: #fdf2f8 !important;
+}
+
+:root[data-theme="pink"] .bg-darkbg {
+    background-color: #fdf2f8 !important;
+}
+
+:root[data-theme="pink"] .bg-darkcard {
+    background-color: #fff1f2 !important;
+}
+
+:root[data-theme="pink"] .border-darkborder {
+    border-color: #fbcfe8 !important;
+}
+
+:root[data-theme="pink"] .text-gray-200,
+:root[data-theme="pink"] .text-gray-300 {
+    color: #831843 !important;
+}
+
+:root[data-theme="pink"] .text-gray-400,
+:root[data-theme="pink"] .text-gray-500 {
+    color: #be185d !important;
+}
+
+:root[data-theme="pink"] .glass-header {
+    background: rgba(253, 242, 248, 0.85) !important;
+    box-shadow: 0 4px 6px -1px rgba(251, 207, 232, 0.5);
+}
+
+:root[data-theme="pink"] .glass-panel {
+    background: rgba(255, 241, 242, 0.95) !important;
+}
+
+:root[data-theme="pink"] .bg-kindle {
+    background-color: #ec4899 !important;
+}
+
+:root[data-theme="pink"] .hover\:bg-kindlehover:hover {
+    background-color: #db2777 !important;
+}
+
+:root[data-theme="pink"] .border-kindle {
+    border-color: #ec4899 !important;
+}
+
+:root[data-theme="pink"] .ring-kindle {
+    --tw-ring-color: #ec4899 !important;
+}
+
+:root[data-theme="pink"] .text-kindle {
+    color: #ec4899 !important;
+}
+
+:root[data-theme="pink"] .bg-\[\#111\] {
+    background-color: #fce7f3 !important;
+}
+
+:root[data-theme="pink"] .bg-\[\#222\] {
+    background-color: #fdf2f8 !important;
+}
+
+:root[data-theme="pink"] .bg-\[\#1c1c1f\] {
+    background-color: #fce7f3 !important;
+}
+
+:root[data-theme="pink"] .bg-\[\#2a2a2a\] {
+    background-color: #f9a8d4 !important;
+    color: #831843 !important;
+}
+
+:root[data-theme="pink"] .shadow-kindle\/20 {
+    --tw-shadow-color: rgba(236, 72, 153, 0.3) !important;
+}

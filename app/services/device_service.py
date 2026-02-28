@@ -1,6 +1,10 @@
 import os
 import re
 
+from app.core.logger import get_logger
+
+logger = get_logger("device")
+
 def detect_device():
     import string
     for letter in string.ascii_uppercase:
@@ -18,7 +22,7 @@ def detect_device():
                     koreader_root = full_kd
                     break
 
-            # Aceita se for um Kindle Clássico OU se apenas tiver a pasta KOReader (útil pra Pendrives simulados ou Kobo)
+            # Accept classic Kindle OR KOReader-only devices (USB drives, Kobo)
             is_kindle = os.path.exists(docs_path) and os.path.exists(system_path)
             
             if is_kindle or koreader_root:
@@ -31,7 +35,7 @@ def detect_device():
                 }
                 
                 if device_info["has_koreader"]:
-                    # 1. Tentar ler o settings.reader.lua para descobrir a pasta exata!
+                    # Try to read settings.reader.lua to find the exact library path
                     settings_file = os.path.join(koreader_root, "settings.reader.lua")
                     found_path = None
                     if os.path.exists(settings_file):
@@ -52,11 +56,11 @@ def detect_device():
                                     found_path = os.path.join(drive, relative_path)
                                     if os.path.exists(found_path):
                                         device_info["koreader_path"] = found_path.replace('\\', '/')
-                        except Exception:
-                            pass
+                        except (OSError, UnicodeDecodeError) as e:
+                            logger.warning("Failed to read KOReader settings: %s", e)
                     
                     if not device_info["koreader_path"]:
-                        common_libs = ["library", "books", "livros", "downloads", "koreader/library"]
+                        common_libs = ["library", "books", "livros", "downloads", "koreader/library"]  # 'livros' intentional (PT folder name)
                         for cl in common_libs:
                             full_cl = os.path.join(drive, cl)
                             if os.path.exists(full_cl):

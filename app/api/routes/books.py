@@ -10,9 +10,12 @@ from fastapi.responses import FileResponse, StreamingResponse
 import json
 from collections import defaultdict
 
-from app.core.config import DB_FILE, TRASH_FOLDER, COVERS_FOLDER, KINDLE_DOCUMENTS_FOLDER
+from app.core.config import DB_FILE, TRASH_FOLDER, COVERS_FOLDER, get_kindle_folder
 from app.models.schemas import BookModel, UpdateBookRequest, DeleteBookRequest, SendBookRequest
 from app.services.book_service import process_book
+from app.core.logger import get_logger
+
+logger = get_logger("routes.books")
 
 router = APIRouter(prefix="/api", tags=["Books"])
 
@@ -30,7 +33,7 @@ def auto_rename_books():
 
         for book_id, title, author, file_path, ext in rows:
             if not os.path.exists(file_path):
-                errors.append({"id": book_id, "title": title, "reason": "Arquivo não encontrado"})
+                errors.append({"id": book_id, "title": title, "reason": "File not found"})
                 continue
 
             safe_title = re.sub(r'[<>:"/\\|?*]', '', title).strip()
@@ -44,7 +47,7 @@ def auto_rename_books():
                 continue
 
             if os.path.exists(new_path) and new_path.lower() != file_path.lower():
-                errors.append({"id": book_id, "title": title, "reason": f"Já existe: {new_filename}"})
+                errors.append({"id": book_id, "title": title, "reason": f"Already exists: {new_filename}"})
                 continue
 
             try:
@@ -60,14 +63,14 @@ def auto_rename_books():
 
 # ── Duplicate Scanner ──
 def _normalize(text):
-    """Remove acentos, pontuação e normaliza para comparação."""
+    """Remove accents, punctuation, and normalize for comparison."""
     text = unicodedata.normalize('NFKD', text.lower())
     text = ''.join(c for c in text if not unicodedata.combining(c))
     text = re.sub(r'[^a-z0-9\s]', '', text)
     return ' '.join(text.split())
 
 def _file_md5(path, chunk_size=8192):
-    h = hashlib.md5()
+    h = hashlib.sha256()
     try:
         with open(path, 'rb') as f:
             while chunk := f.read(chunk_size):
@@ -137,7 +140,7 @@ def update_book(book_id: int, req: UpdateBookRequest):
         row = cursor.fetchone()
         
         if not row:
-            raise HTTPException(status_code=404, detail="Livro não encontrado no banco de dados.")
+            raise HTTPException(status_code=404, detail="Book not found in database.")
             
         old_path, ext = row
         new_path = old_path
@@ -152,7 +155,8 @@ def update_book(book_id: int, req: UpdateBookRequest):
             if new_path != old_path:
                 try:
                     os.rename(old_path, new_path)
-                except Exception:
+                except OSError as e:
+                    logger.warning("Failed to rename book file %s: %s", old_path, e)
                     new_path = old_path
 
         cursor.execute('''
@@ -162,12 +166,12 @@ def update_book(book_id: int, req: UpdateBookRequest):
         ''', (req.title, req.author, new_path, req.series, req.volume, req.synopsis, req.publisher, req.publish_year, book_id))
         conn.commit()
         
-    return {"status": "success", "message": "Livro atualizado e renomeado!"}
+    return {"status": "success", "message": "Book updated and renamed!"}
 
 @router.post("/delete")
 def delete_books(req: DeleteBookRequest):
     if not req.ids:
-        return {"status": "success", "message": "Nenhum livro selecionado."}
+        return {"status": "success", "message": "No books selected."}
         
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
@@ -197,36 +201,40 @@ def delete_books(req: DeleteBookRequest):
                     if os.path.exists(cover_full_path):
                         os.remove(cover_full_path)
                         
-            except Exception:
-                pass
+            except OSError as e:
+                logger.warning("Failed to delete/move file for book %d: %s", book_id, e)
                 
         cursor.execute(f"DELETE FROM books WHERE id IN ({placeholders})", req.ids)
         conn.commit()
         
-    return {"status": "success", "message": f"{len(rows)} livro(s) excluído(s)."}
+    return {"status": "success", "message": f"{len(rows)} book(s) deleted."}
 
 @router.post("/send")
 def send_to_kindle(req: SendBookRequest):
+    kindle_path = req.kindle_path.strip() if req.kindle_path else ""
+    if not kindle_path:
+        kindle_path = get_kindle_folder()
+
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT file_path FROM books WHERE id = ?", (req.id,))
         row = cursor.fetchone()
     
     if not row:
-        raise HTTPException(status_code=404, detail="Livro não encontrado no banco de dados.")
+        raise HTTPException(status_code=404, detail="Book not found in database.")
         
     file_path = row[0]
     
     if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="O arquivo do livro não foi encontrado.")
+        raise HTTPException(status_code=404, detail="Book file not found on disk.")
         
-    if not os.path.exists(req.kindle_path):
-        raise HTTPException(status_code=400, detail=f"Kindle não encontrado em '{req.kindle_path}'.")
+    if not os.path.exists(kindle_path):
+        raise HTTPException(status_code=400, detail=f"Kindle not found at '{kindle_path}'.")
 
     def generate():
         try:
             file_name = os.path.basename(file_path)
-            dest_path = os.path.join(req.kindle_path, file_name)
+            dest_path = os.path.join(kindle_path, file_name)
             
             total_size = os.path.getsize(file_path)
             if total_size == 0:
@@ -271,11 +279,11 @@ def get_book_file(book_id: int):
         cursor.execute("SELECT file_path, file_type FROM books WHERE id = ?", (book_id,))
         row = cursor.fetchone()
         if not row:
-            raise HTTPException(status_code=404, detail="Livro não encontrado.")
+            raise HTTPException(status_code=404, detail="Book not found.")
             
         file_path, file_type = row
         if not os.path.exists(file_path):
-            raise HTTPException(status_code=404, detail="Arquivo físico do livro não encontrado.")
+            raise HTTPException(status_code=404, detail="Book file not found on disk.")
 
         ext = file_type.lower()
         media_type = MIME_TYPES.get(ext, "application/octet-stream")

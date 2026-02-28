@@ -4,9 +4,12 @@ import threading
 import sqlite3
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from app.core.config import DB_FILE, get_books_folder
+from app.core.config import DB_FILE, VALID_EXTENSIONS, get_books_folder
 from app.core.events import notify_clients
 from app.services.book_service import process_book
+from app.core.logger import get_logger
+
+logger = get_logger("watchdog")
 
 global_observer = None
 
@@ -21,8 +24,7 @@ class BookWatchdogHandler(FileSystemEventHandler):
 
     def _schedule_process(self, file_path):
         ext = os.path.splitext(file_path)[1].lower()
-        valid_extensions = ('.epub', '.mobi', '.azw3', '.azw', '.kfx', '.pdf', '.cbz', '.cbr', '.djvu')
-        if ext in valid_extensions:
+        if ext in VALID_EXTENSIONS:
             file_name = os.path.basename(file_path)
             threading.Thread(target=self._process_delayed, args=(file_path, file_name, ext), daemon=True).start()
 
@@ -52,15 +54,15 @@ class BookWatchdogHandler(FileSystemEventHandler):
                 cursor.execute("SELECT id FROM books WHERE file_path = ?", (file_path,))
                 if cursor.fetchone():
                     return
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("DB check failed for %s: %s", file_path, e)
                 
-        print(f"[Watchdog] Processando novo e-book detectado: {file_name}", flush=True)
+        logger.info("Processing new e-book detected: %s", file_name)
         try:
             process_book(file_path, file_name, ext)
             notify_clients("new_book")
         except Exception as e:
-            print(f"[Watchdog] Erro processando {file_name}: {e}", flush=True)
+            logger.error("Error processing %s: %s", file_name, e)
 
 def start_watchdog():
     global global_observer
@@ -69,7 +71,7 @@ def start_watchdog():
         global_observer = Observer()
         global_observer.schedule(BookWatchdogHandler(), books_folder, recursive=True)
         global_observer.start()
-        print(f"[Watchdog] Monitorando pasta: {books_folder}", flush=True)
+        logger.info("Watching folder: %s", books_folder)
 
 def restart_watchdog():
     global global_observer
@@ -77,8 +79,8 @@ def restart_watchdog():
         try:
             global_observer.stop()
             global_observer.join()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Error stopping watchdog observer: %s", e)
     start_watchdog()
 
 def stop_watchdog():
@@ -87,5 +89,5 @@ def stop_watchdog():
         try:
             global_observer.stop()
             global_observer.join(timeout=2.0)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Error stopping watchdog observer during shutdown: %s", e)

@@ -1,9 +1,26 @@
 import asyncio
+import threading
 
-clients = set()
-main_loop = None
+_lock = threading.Lock()
+clients: set = set()
+main_loop: asyncio.AbstractEventLoop | None = None
+
 
 def notify_clients(message: str):
-    if main_loop:
-        for q in list(clients):
-            main_loop.call_soon_threadsafe(q.put_nowait, message)
+    with _lock:
+        loop = main_loop
+        client_list = list(clients)
+    if loop:
+        for q in client_list:
+            loop.call_soon_threadsafe(q.put_nowait, message)
+
+
+def add_client(q: asyncio.Queue):
+    with _lock:
+        clients.add(q)
+
+
+def remove_client(q: asyncio.Queue):
+    with _lock:
+        clients.discard(q)
+

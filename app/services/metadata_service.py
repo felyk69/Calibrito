@@ -3,9 +3,34 @@ import re
 import hashlib
 import requests
 import sqlite3
+from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from fastapi import HTTPException
 from app.core.config import DB_FILE, COVERS_FOLDER
+from app.core.logger import get_logger
+
+logger = get_logger("metadata")
+
+_ALLOWED_COVER_HOSTS = {
+    "books.google.com", "covers.openlibrary.org",
+    "archive.org", "ia800.us.archive.org",
+    "i.gr-assets.com", "images-na.ssl-images-amazon.com",
+}
+
+
+def _is_safe_url(url: str) -> bool:
+    """Validate URL to prevent SSRF attacks."""
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            return False
+        host = parsed.hostname or ""
+        # Block private/internal IPs
+        if host in ("localhost", "127.0.0.1", "0.0.0.0") or host.startswith("192.168.") or host.startswith("10.") or host.startswith("172."):
+            return False
+        return True
+    except Exception:
+        return False
 
 def _is_isbn(q: str) -> bool:
     """Detect if query looks like an ISBN (10 or 13 digits)."""
@@ -77,7 +102,8 @@ def _search_google_books(q: str, is_isbn: bool) -> list:
                     "source": "Google Books"
                 })
         return results
-    except Exception:
+    except requests.RequestException as e:
+        logger.warning("Google Books search failed for '%s': %s", q, e)
         return []
 
 def _search_openlibrary(q: str, is_isbn: bool) -> list:
@@ -112,7 +138,7 @@ def _search_openlibrary(q: str, is_isbn: bool) -> list:
                             a_resp = requests.get(f"https://openlibrary.org{author_key}.json", headers=headers, timeout=5)
                             if a_resp.status_code == 200:
                                 authors.append(a_resp.json().get("name", ""))
-                        except Exception:
+                        except requests.RequestException:
                             pass
                 
                 # Cover
@@ -176,7 +202,8 @@ def _search_openlibrary(q: str, is_isbn: bool) -> list:
                         "source": "Open Library"
                     })
             return results
-    except Exception:
+    except requests.RequestException as e:
+        logger.warning("OpenLibrary search failed for '%s': %s", q, e)
         return []
 
 
@@ -202,8 +229,8 @@ def search_metadata(q: str):
                         google_results = result
                     else:
                         openlibrary_results = result
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning("Search source '%s' failed: %s", source, e)
         
         # Merge: Google first, then OpenLibrary (avoiding exact title+author dupes)
         results = list(google_results)
@@ -216,7 +243,7 @@ def search_metadata(q: str):
                 seen.add(key)
         
         if not results:
-            return {"status": "error", "message": "Nenhum resultado encontrado no Google Books nem OpenLibrary."}
+            return {"status": "error", "message": "No results found in Google Books or OpenLibrary."}
         
         return {"status": "success", "results": results}
     except Exception as e:
@@ -225,20 +252,22 @@ def search_metadata(q: str):
 
 def download_cover(book_id: int, url: str):
     """Download an image from the internet and set as book cover in DB."""
+    if not _is_safe_url(url):
+        raise HTTPException(status_code=400, detail="Invalid or disallowed cover URL.")
     try:
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT file_path FROM books WHERE id = ?", (book_id,))
             row = cursor.fetchone()
             if not row:
-                raise HTTPException(status_code=404, detail="Livro não encontrado.")
+                raise HTTPException(status_code=404, detail="Book not found.")
             
             file_path = row[0]
             
             resp = requests.get(url, stream=True, timeout=10)
             resp.raise_for_status()
             
-            cover_filename = hashlib.md5((file_path + url).encode('utf-8')).hexdigest() + ".jpg"
+            cover_filename = hashlib.sha256((file_path + url).encode('utf-8')).hexdigest() + ".jpg"
             cover_full_path = os.path.join(COVERS_FOLDER, cover_filename)
             
             with open(cover_full_path, "wb") as f:
