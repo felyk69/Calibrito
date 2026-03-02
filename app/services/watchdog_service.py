@@ -1,23 +1,26 @@
 import os
-import time
 import threading
-import sqlite3
-from watchdog.observers import Observer
+import time
+
 from watchdog.events import FileSystemEventHandler
-from app.core.config import DB_FILE, VALID_EXTENSIONS, get_books_folder
+from watchdog.observers import Observer
+
+from app.core.config import VALID_EXTENSIONS, get_books_folder
+from app.core.database import get_db_connection
 from app.core.events import notify_clients
-from app.services.book_service import process_book
 from app.core.logger import get_logger
+from app.services.book_service import process_book
 
 logger = get_logger("watchdog")
 
 global_observer = None
 
+
 class BookWatchdogHandler(FileSystemEventHandler):
     def on_created(self, event):
         if not event.is_directory:
             self._schedule_process(event.src_path)
-            
+
     def on_moved(self, event):
         if not event.is_directory:
             self._schedule_process(event.dest_path)
@@ -32,7 +35,6 @@ class BookWatchdogHandler(FileSystemEventHandler):
         time.sleep(2)
         prev_size = -1
         retries = 0
-        from sqlite3 import OperationalError
         while True:
             try:
                 size = os.path.getsize(file_path)
@@ -45,24 +47,25 @@ class BookWatchdogHandler(FileSystemEventHandler):
             retries += 1
             if retries > 60:
                 break
-                
+
         time.sleep(1)
-        
+
         try:
-            with sqlite3.connect(DB_FILE) as conn:
+            with get_db_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT id FROM books WHERE file_path = ?", (file_path,))
                 if cursor.fetchone():
                     return
         except Exception as e:
             logger.warning("DB check failed for %s: %s", file_path, e)
-                
+
         logger.info("Processing new e-book detected: %s", file_name)
         try:
             process_book(file_path, file_name, ext)
             notify_clients("new_book")
         except Exception as e:
-            logger.error("Error processing %s: %s", file_name, e)
+            logger.error("Erro ao processar %s: %s", file_name, e)
+
 
 def start_watchdog():
     global global_observer
@@ -73,6 +76,7 @@ def start_watchdog():
         global_observer.start()
         logger.info("Watching folder: %s", books_folder)
 
+
 def restart_watchdog():
     global global_observer
     if global_observer:
@@ -80,8 +84,9 @@ def restart_watchdog():
             global_observer.stop()
             global_observer.join()
         except Exception as e:
-            logger.warning("Error stopping watchdog observer: %s", e)
+            logger.warning("Erro ao parar watchdog observer: %s", e)
     start_watchdog()
+
 
 def stop_watchdog():
     global global_observer
@@ -90,4 +95,4 @@ def stop_watchdog():
             global_observer.stop()
             global_observer.join(timeout=2.0)
         except Exception as e:
-            logger.warning("Error stopping watchdog observer during shutdown: %s", e)
+            logger.warning("Erro ao parar watchdog observer durante shutdown: %s", e)

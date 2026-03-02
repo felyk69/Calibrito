@@ -44,10 +44,15 @@ function initTheme() {
 function applyTheme(themeName) {
     localStorage.setItem('calibreTheme', themeName);
     document.documentElement.setAttribute('data-theme', themeName);
+    if (themeName === 'light' || themeName === 'pink') {
+        document.documentElement.classList.remove('dark');
+    } else {
+        document.documentElement.classList.add('dark');
+    }
 }
 
 function setupSSE() {
-    const evtSource = new EventSource('/api/events');
+    const evtSource = new EventSource('/api/v1/events');
     evtSource.onmessage = function (event) {
         if (event.data === 'new_book' || event.data === 'refresh') {
             console.log("Novo e-book detectado pelo servidor, recarregando...");
@@ -137,7 +142,7 @@ function sortBooksArray(booksArray) {
 
 async function loadBooks() {
     try {
-        const response = await fetch('/api/books');
+        const response = await fetch('/api/v1/books');
         allBooks = await response.json();
         applyFilters(); // Render comes from here
     } catch (error) {
@@ -234,13 +239,13 @@ function renderMoreBooks() {
 
                 <!-- Context Menu Dropdown -->
                 <div id="card-menu-${book.id}" class="card-context-menu hidden absolute bottom-12 right-2 w-44 bg-[#1e1e1e] border border-[#333] rounded-xl shadow-2xl z-50 overflow-hidden py-1">
-                    ${['.epub', '.mobi', '.azw3', '.pdf', '.fb2', '.cbz'].includes(book.file_type.toLowerCase()) ? `<button onclick="openReader(${book.id}, event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>Read</button>` : ''}
-                    <button onclick="sendToKindle(${book.id}, this, event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>Send</button>
+                    ${['.epub', '.mobi', '.azw3', '.pdf', '.fb2', '.cbz'].includes(book.file_type.toLowerCase()) ? `<button onclick="openReader(${book.id}, event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>${t('btn_read')}</button>` : ''}
+                    <button onclick="sendToKindle(${book.id}, this, event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>${t('btn_send_kindle')}</button>
                     <div class="border-t border-[#333] my-1"></div>
-                    <button onclick="openEditModal(${book.id}, event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Edit Metadata</button>
-                    <a href="/api/books/${book.id}/download" onclick="event.stopPropagation()" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>Download</a>
+                    <button onclick="openEditModal(${book.id}, event)" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>${t('btn_edit_metadata')}</button>
+                    <a href="/api/v1/books/${book.id}/download" onclick="event.stopPropagation()" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-300 hover:bg-[#2a2a2a] hover:text-white transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>${t('btn_download')}</a>
                     <div class="border-t border-[#333] my-1"></div>
-                    <button onclick="selectedIds.clear(); selectedIds.add(${book.id}); openDeleteModal(); event.stopPropagation();" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>Delete</button>
+                    <button onclick="selectedIds.clear(); selectedIds.add(${book.id}); openDeleteModal(); event.stopPropagation();" class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>${t('btn_delete')}</button>
                 </div>
             </div>
             <div class="p-3">
@@ -258,9 +263,9 @@ function renderMoreBooks() {
         tr.onclick = () => toggleSelection(book.id);
         tr.innerHTML = `
             <td class="py-3 px-6 text-center">
-                 <div class="selection-indicator w-5 h-5 rounded border ${isSelected ? 'bg-kindle border-kindle' : 'border-gray-600 bg-transparent'} flex items-center justify-center mx-auto">
-                    ${isSelected ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
-                 </div>
+                <label class="inline-flex items-center cursor-pointer pointer-events-none">
+                    <input type="checkbox" class="selection-indicator-cb w-4 h-4 rounded appearance-none border border-gray-500 bg-transparent checked:bg-kindle checked:border-kindle transition-colors relative after:content-[''] after:absolute after:hidden checked:after:block after:left-[5px] after:top-[2px] after:w-[5px] after:h-[9px] after:border-r-2 after:border-b-2 after:border-white after:rotate-45" ${isSelected ? 'checked' : ''}>
+                </label>
             </td>
             <td class="py-2 px-6">
                 <img src="${coverUrl}" class="w-8 h-12 object-cover rounded shadow-sm">
@@ -275,9 +280,9 @@ function renderMoreBooks() {
             </td>
             <td class="py-3 px-6 text-right">
                  ${maintenanceMode ?
-                `<button onclick="openEditModal(${book.id}, event)" class="text-gray-500 hover:text-white mr-3">Edit</button>` :
-                `${['.epub', '.mobi', '.azw3', '.pdf', '.fb2', '.cbz'].includes(book.file_type.toLowerCase()) ? `<button onclick="openReader(${book.id}, event)" class="text-kindle hover:text-white font-medium text-xs mr-3">Read</button>` : ''}
-                <button onclick="sendToKindle(${book.id}, this, event)" class="text-kindle hover:text-white font-medium text-xs">Send</button>`
+                `<button onclick="openEditModal(${book.id}, event)" class="text-gray-500 hover:text-white mr-3">${t('btn_edit_metadata')}</button>` :
+                `${['.epub', '.mobi', '.azw3', '.pdf', '.fb2', '.cbz'].includes(book.file_type.toLowerCase()) ? `<button onclick="openReader(${book.id}, event)" class="text-kindle hover:text-white font-medium text-xs mr-3">${t('btn_read')}</button>` : ''}
+                <button onclick="sendToKindle(${book.id}, this, event)" class="text-kindle hover:text-white font-medium text-xs">${t('btn_send_kindle')}</button>`
             }
             </td>
         `;
@@ -361,21 +366,13 @@ function updateSelectionVisuals(id) {
         if (isSelected) {
             row.classList.add('bg-kindle/5', 'hover:bg-kindle/10');
             row.classList.remove('hover:bg-[#222]');
-            const checkbox = row.querySelector('.selection-indicator');
-            if (checkbox) {
-                checkbox.classList.add('bg-kindle', 'border-kindle');
-                checkbox.classList.remove('border-gray-600', 'bg-transparent');
-                checkbox.innerHTML = svgIcon;
-            }
+            const checkbox = row.querySelector('.selection-indicator-cb');
+            if (checkbox) checkbox.checked = true;
         } else {
             row.classList.remove('bg-kindle/5', 'hover:bg-kindle/10');
             row.classList.add('hover:bg-[#222]');
-            const checkbox = row.querySelector('.selection-indicator');
-            if (checkbox) {
-                checkbox.classList.remove('bg-kindle', 'border-kindle');
-                checkbox.classList.add('border-gray-600', 'bg-transparent');
-                checkbox.innerHTML = '';
-            }
+            const checkbox = row.querySelector('.selection-indicator-cb');
+            if (checkbox) checkbox.checked = false;
         }
     }
 }
@@ -384,6 +381,13 @@ function updateActionBar() {
     const bar = document.getElementById('selectionBar');
     const count = selectedIds.size;
     document.getElementById('selectedCountBadge').innerText = count;
+
+    // Update Select-All checkbox state if it exists
+    const selectAllCb = document.getElementById('selectAllCheckbox');
+    if (selectAllCb) {
+        selectAllCb.checked = count > 0 && count === filteredBooks.length;
+        selectAllCb.indeterminate = count > 0 && count < filteredBooks.length;
+    }
 
     const btnSend = document.getElementById('btnActionBarSend');
     const btnConfirm = document.getElementById('btnConfirmDelete');
@@ -459,9 +463,12 @@ function setDeviceFilter(mode) {
     const koPath = document.getElementById('detectedKOReaderPath').value;
     const activePathInput = document.getElementById('kindlePath');
 
+    const activeClasses = "px-4 py-1 rounded-full text-xs font-medium flex items-center gap-2 transition-all device-active";
+    const inactiveClasses = "px-4 py-1 rounded-full text-xs font-medium flex items-center gap-2 transition-all device-inactive text-gray-500 hover:text-gray-300";
+
     if (mode === 'kindle') {
-        btnK.className = "px-4 py-1 rounded-full text-xs font-medium flex items-center gap-2 transition-all bg-[#0a2342] text-blue-400 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]";
-        btnKO.className = "px-4 py-1 rounded-full text-xs font-medium flex items-center gap-2 transition-all text-gray-500 hover:text-gray-300";
+        btnK.className = activeClasses;
+        btnKO.className = inactiveClasses;
 
         if (btnPDF) btnPDF.classList.add('hidden');
         if (btnCBZ) btnCBZ.classList.add('hidden');
@@ -472,8 +479,8 @@ function setDeviceFilter(mode) {
             setFormatFilter('all');
         }
     } else {
-        btnKO.className = "px-4 py-1 rounded-full text-xs font-medium flex items-center gap-2 transition-all bg-[#0a2342] text-blue-400 border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]";
-        btnK.className = "px-4 py-1 rounded-full text-xs font-medium flex items-center gap-2 transition-all text-gray-500 hover:text-gray-300";
+        btnKO.className = activeClasses;
+        btnK.className = inactiveClasses;
 
         if (btnPDF) btnPDF.classList.remove('hidden');
         if (btnCBZ) btnCBZ.classList.remove('hidden');
@@ -550,22 +557,26 @@ document.addEventListener('click', () => {
 
 // --- Connection Logic ---
 async function checkDeviceStatus(silent = false) {
-    const statusDot = document.getElementById('statusDot');
-    const statusText = document.getElementById('statusText');
-    const badge = document.getElementById('connectionBadge');
+    const statusDot = document.getElementById('usbStatusDot');
+    const statusText = document.getElementById('usbStatusText');
+    const badge = document.getElementById('usbStatusBadge');
 
     try {
-        const res = await fetch('/api/detect-device');
+        const res = await fetch('/api/v1/detect-device');
         const data = await res.json();
+
+        if (badge) badge.classList.remove('hidden'); // Show badge once checked
 
         if (data.connected) {
             const wasAlreadyConnected = lastConnectedState;
             lastConnectedState = true;
 
-            statusDot.classList.remove('bg-gray-500', 'animate-pulse');
-            statusDot.classList.add('bg-green-500');
-            statusText.innerText = "Kindle Conectado";
-            badge.classList.add('border-green-500/30', 'bg-green-500/5');
+            if (statusDot) {
+                statusDot.classList.remove('bg-gray-500', 'animate-pulse', 'shadow-[0_0_8px_rgba(107,114,128,0.6)]');
+                statusDot.classList.add('bg-green-500', 'shadow-[0_0_8px_rgba(34,197,94,0.6)]');
+            }
+            if (statusText) statusText.innerText = "KINDLE LOCAL";
+            if (badge) badge.classList.add('border-green-500/30', 'bg-green-500/5');
 
             // If it wasn't connected before, prompt or assign paths
             if (!wasAlreadyConnected) {
@@ -584,10 +595,13 @@ async function checkDeviceStatus(silent = false) {
             }
         } else {
             lastConnectedState = false;
-            statusDot.classList.remove('bg-green-500');
-            statusDot.classList.add('bg-gray-500', 'animate-pulse');
-            statusText.innerText = "Buscando USB...";
-            badge.classList.remove('border-green-500/30', 'bg-green-500/5');
+
+            if (statusDot) {
+                statusDot.classList.remove('bg-green-500', 'shadow-[0_0_8px_rgba(34,197,94,0.6)]');
+                statusDot.classList.add('bg-gray-500', 'animate-pulse', 'shadow-[0_0_8px_rgba(107,114,128,0.6)]');
+            }
+            if (statusText) statusText.innerText = "BUSCANDO USB";
+            if (badge) badge.classList.remove('border-green-500/30', 'bg-green-500/5');
         }
         updateActionBar(); // Update button disabled state
     } catch (e) { console.log(e); }
@@ -615,7 +629,7 @@ function closeModal(id) {
 
 function openSettingsModal() {
     // Load settings
-    fetch('/api/settings').then(r => r.json()).then(d => {
+    fetch('/api/v1/settings').then(r => r.json()).then(d => {
         document.getElementById('cfgBooksFolder').value = d.books_folder;
         document.getElementById('cfgScannerThreads').value = d.scanner_threads || 2;
     });
@@ -786,7 +800,7 @@ async function sendSelectedBatch() {
             btn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Enviando ${i + 1}/${ids.length}...`;
             btn.style.background = `linear-gradient(to right, #16a34a 0%, transparent 0%)`;
 
-            const res = await fetch('/api/send', {
+            const res = await fetch('/api/v1/send', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id, kindle_path: kindlePath })
@@ -865,7 +879,7 @@ async function saveEditBook() {
 
     try {
         // Update text metadata
-        await fetch(`/api/books/${id}`, {
+        await fetch(`/api/v1/books/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -875,7 +889,7 @@ async function saveEditBook() {
 
         // If a new cover was selected, download it
         if (coverUrl) {
-            await fetch(`/api/books/${id}/download-cover`, {
+            await fetch(`/api/v1/books/${id}/download-cover`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: coverUrl })
@@ -906,7 +920,7 @@ async function searchMetadata() {
     const resultsContainer = document.getElementById('metaSearchResults');
 
     try {
-        const res = await fetch(`/api/metadata/search?q=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/v1/metadata/search?q=${encodeURIComponent(q)}`);
         const data = await res.json();
 
         if (data.status === 'error') {
@@ -983,7 +997,7 @@ async function confirmDeleteBatch() {
     const ids = Array.from(selectedIds);
     const permanent = document.getElementById('permanentDeleteCheck').checked;
 
-    await fetch('/api/delete', {
+    await fetch('/api/v1/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids, permanent })
@@ -999,24 +1013,128 @@ async function confirmDeleteBatch() {
 async function saveSettings() {
     const folder = document.getElementById('cfgBooksFolder').value;
     const threads = document.getElementById('cfgScannerThreads').value;
-    await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ books_folder: folder, scanner_threads: parseInt(threads) })
-    });
-    closeSettingsModal();
-    loadBooks();
-    showToast("Settings saved.", "success");
+
+    const btn = document.getElementById('btnSaveSettings');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="animate-pulse">Salvando...</span>';
+    btn.disabled = true;
+
+    try {
+        await fetch('/api/v1/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ books_folder: folder, scanner_threads: parseInt(threads), rescan: false })
+        });
+        showToast("Configurações salvas!", "success");
+        closeSettingsModal();
+    } catch (e) {
+        showToast("Erro ao salvar.", "error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
 
-async function pickFolderFor(id) {
+async function rescanLibrary() {
+    const folder = document.getElementById('cfgBooksFolder').value;
+    const threads = document.getElementById('cfgScannerThreads').value;
+
+    const btn = document.getElementById('btnRescan');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="animate-pulse">Enviando...</span>';
+    btn.disabled = true;
+
     try {
-        const r = await fetch('/api/pick-folder');
-        if (r.ok) {
-            const d = await r.json();
-            document.getElementById(id).value = d.path;
+        await fetch('/api/v1/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ books_folder: folder, scanner_threads: parseInt(threads), rescan: true })
+        });
+        closeSettingsModal();
+        showToast("Escaneando biblioteca...", "info");
+        // loadBooks will be automatically triggered later if SSE is configured
+        // or we can call it manually, but starting a scan usually sends via SSE
+    } catch (e) {
+        showToast("Erro ao reenviar rescan.", "error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// --- Web Folder Browser ---
+let fbTargetInputId = null;
+let fbCurrentParent = "";
+
+function pickFolderFor(id) {
+    fbTargetInputId = id;
+    const currentVal = document.getElementById(id).value || "";
+    document.getElementById('folderBrowserModal').classList.remove('hidden');
+    document.getElementById('folderBrowserModal').classList.add('flex');
+    loadFolderBrowser(currentVal);
+}
+
+function closeFolderBrowser() {
+    document.getElementById('folderBrowserModal').classList.add('hidden');
+    document.getElementById('folderBrowserModal').classList.remove('flex');
+}
+
+async function loadFolderBrowser(path) {
+    const listEl = document.getElementById('fbList');
+    const errEl = document.getElementById('fbError');
+    const pathEl = document.getElementById('fbCurrentPath');
+    const upBtn = document.getElementById('fbUpBtn');
+    const extLoading = document.getElementById('fbLoading');
+
+    errEl.classList.add('hidden');
+    listEl.innerHTML = '';
+    extLoading.classList.remove('hidden');
+
+    try {
+        const res = await fetch(`/api/v1/folders?path=${encodeURIComponent(path)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Erro ao carregar");
+
+        fbCurrentParent = data.parent_path;
+        pathEl.textContent = data.current_path || "Este Computador";
+
+        upBtn.disabled = !data.parent_path && data.current_path !== "";
+        if (data.current_path === "") upBtn.disabled = true;
+
+        if (!data.folders || data.folders.length === 0) {
+            listEl.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">Pasta vazia ou sem permissão de acesso.</div>';
+        } else {
+            data.folders.forEach(f => {
+                const btn = document.createElement('button');
+                btn.className = "flex items-center gap-3 p-3 w-full text-left bg-gray-50 dark:bg-darkcard hover:bg-gray-100 dark:hover:bg-darkbg border border-gray-200 dark:border-darkborder rounded-lg transition-colors group";
+                btn.innerHTML = `
+                    <svg class="w-6 h-6 text-kindle/70 group-hover:text-kindle flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                    </svg>
+                    <span class="truncate font-medium text-gray-700 dark:text-gray-200">${f.name}</span>
+                `;
+                btn.onclick = () => loadFolderBrowser(f.path);
+                listEl.appendChild(btn);
+            });
         }
-    } catch (e) { console.error(e); }
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+    } finally {
+        extLoading.classList.add('hidden');
+    }
+}
+
+function fbNavigateUp() {
+    if (fbCurrentParent !== null) loadFolderBrowser(fbCurrentParent);
+}
+
+function fbConfirmSelection() {
+    const path = document.getElementById('fbCurrentPath').textContent;
+    if (path && path !== "Este Computador" && fbTargetInputId) {
+        document.getElementById(fbTargetInputId).value = path;
+        closeFolderBrowser();
+    }
 }
 
 // --- Toast ---
@@ -1137,7 +1255,7 @@ async function autoRenameAll() {
     btn.innerHTML = '<span class="animate-pulse">Renomeando...</span>';
 
     try {
-        const res = await fetch('/api/books/auto-rename', { method: 'POST' });
+        const res = await fetch('/api/v1/books/auto-rename', { method: 'POST' });
         const data = await res.json();
 
         let msg = `✅ ${data.renamed} renomeados, ${data.skipped} já corretos.`;
@@ -1165,7 +1283,7 @@ async function scanDuplicates() {
     btn.innerHTML = '<span class="animate-pulse">Scanning...</span>';
 
     try {
-        const res = await fetch('/api/books/duplicates');
+        const res = await fetch('/api/v1/books/duplicates');
         const data = await res.json();
 
         if (data.total_groups === 0) {
@@ -1325,7 +1443,7 @@ async function deleteSelectedDuplicates() {
     btn.innerHTML = '<span class="animate-pulse">Deleting...</span>';
 
     try {
-        const res = await fetch('/api/delete', {
+        const res = await fetch('/api/v1/delete', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids: [...dupDeleteSet], permanent: false })

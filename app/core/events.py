@@ -23,4 +23,3 @@ def add_client(q: asyncio.Queue):
 def remove_client(q: asyncio.Queue):
     with _lock:
         clients.discard(q)
-

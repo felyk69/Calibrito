@@ -5,16 +5,16 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #0f0f0f;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #333;
+    background: var(--color-darkborder);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #444;
+    background: var(--color-kindle);
 }
 
 .book-cover-container {
@@ -24,165 +24,212 @@
 }
 
 .glass-header {
-    background: rgba(15, 15, 15, 0.85);
+    background: var(--bg-glass-header);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }
 
 .glass-panel {
-    background: rgba(24, 24, 27, 0.95);
+    background: var(--bg-glass-panel);
     backdrop-filter: blur(10px);
 }
 
 /* --- THEME ENGINE --- */
-/* Light Theme Overrides */
+/* DEFAULT / DARK THEME */
+:root {
+    --color-darkbg: #0f0f0f;
+    --color-darkcard: #18181b;
+    --color-darkborder: #27272a;
+    --color-kindle: #00A8E1;
+    --color-kindlehover: #0090c1;
+    --text-primary: #e5e7eb;
+    /* text-gray-200 */
+    --text-secondary: #9ca3af;
+    /* text-gray-400 */
+    --text-muted: #6b7280;
+    /* text-gray-500 */
+    --bg-glass-header: rgba(15, 15, 15, 0.85);
+    --bg-glass-panel: rgba(24, 24, 27, 0.95);
+    --bg-input: #1e1e1e;
+    --bg-input-hover: #252525;
+    --bg-alt-1: #1c1c1f;
+    --bg-alt-2: #252527;
+    --bg-alt-3: #2a2a2a;
+}
+
+/* LIGHT THEME */
 :root[data-theme="light"] {
-    /* Backgrounds */
-    --tw-bg-opacity: 1;
-    --color-darkbg: #f3f4f6 !important;
-    /* gray-100 */
-    --color-darkcard: #ffffff !important;
-    /* white */
-    --color-darkborder: #e5e7eb !important;
-    /* gray-200 */
-
-    /* Text elements override via cascade */
-    color: #1f2937 !important;
-    /* text-gray-800 */
+    --color-darkbg: #f3f4f6;
+    --color-darkcard: #ffffff;
+    --color-darkborder: #e5e7eb;
+    --color-kindle: #3b82f6;
+    --color-kindlehover: #2563eb;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --bg-glass-header: rgba(255, 255, 255, 0.85);
+    --bg-glass-panel: rgba(255, 255, 255, 0.95);
+    --bg-input: #ffffff;
+    --bg-input-hover: #f9fafb;
+    --bg-alt-1: #f9fafb;
+    --bg-alt-2: #f3f4f6;
+    --bg-alt-3: #e5e7eb;
 }
 
-:root[data-theme="light"] body {
-    background-color: #f3f4f6 !important;
-}
-
-:root[data-theme="light"] .bg-darkbg {
-    background-color: #f3f4f6 !important;
-}
-
-:root[data-theme="light"] .bg-darkcard {
-    background-color: #ffffff !important;
-}
-
-:root[data-theme="light"] .border-darkborder {
-    border-color: #e5e7eb !important;
-}
-
-:root[data-theme="light"] .text-gray-200,
-:root[data-theme="light"] .text-gray-300 {
-    color: #111827 !important;
-}
-
-:root[data-theme="light"] .text-gray-400,
-:root[data-theme="light"] .text-gray-500 {
-    color: #4b5563 !important;
-}
-
-:root[data-theme="light"] .glass-header {
-    background: rgba(255, 255, 255, 0.85) !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-}
-
-:root[data-theme="light"] .glass-panel {
-    background: rgba(255, 255, 255, 0.95) !important;
-}
-
-:root[data-theme="light"] .bg-\[\#111\] {
-    background-color: #e5e7eb !important;
-}
-
-:root[data-theme="light"] .bg-\[\#222\] {
-    background-color: #f3f4f6 !important;
-}
-
-:root[data-theme="light"] .bg-\[\#1c1c1f\] {
-    background-color: #f9fafb !important;
-}
-
-:root[data-theme="light"] .bg-\[\#2a2a2a\] {
-    background-color: #d1d5db !important;
-    color: #111827 !important;
-}
-
-/* Pink Theme Overrides */
+/* PINK THEME */
 :root[data-theme="pink"] {
-    --color-kindle: #ec4899 !important;
+    --color-darkbg: #fdf2f8;
+    /* pink-50 */
+    --color-darkcard: #fff1f2;
+    /* rose-50 */
+    --color-darkborder: #fbcfe8;
+    /* pink-200 */
+    --color-kindle: #ec4899;
     /* pink-500 */
-    --color-kindlehover: #db2777 !important;
+    --color-kindlehover: #db2777;
     /* pink-600 */
+    --text-primary: #831843;
+    /* pink-900 */
+    --text-secondary: #be185d;
+    /* pink-700 */
+    --text-muted: #9d174d;
+    /* pink-800 */
+    --bg-glass-header: rgba(253, 242, 248, 0.85);
+    --bg-glass-panel: rgba(255, 241, 242, 0.95);
+    --bg-input: #ffffff;
+    --bg-input-hover: #fdf2f8;
+    --bg-alt-1: #fce7f3;
+    --bg-alt-2: #fbcfe8;
+    --bg-alt-3: #f9a8d4;
 }
 
-:root[data-theme="pink"] body {
-    background-color: #fdf2f8 !important;
+/* DARK PINK THEME */
+:root[data-theme="dark-pink"] {
+    --color-darkbg: #110710;
+    /* Very dark magenta based */
+    --color-darkcard: #1f121d;
+    /* Slightly lighter dark pink */
+    --color-darkborder: #3b1c31;
+    /* Border for dark pink */
+    --color-kindle: #ec4899;
+    /* pink-500 */
+    --color-kindlehover: #db2777;
+    /* pink-600 */
+    --text-primary: #fbcfe8;
+    /* pink-200 */
+    --text-secondary: #f472b6;
+    /* pink-400 */
+    --text-muted: #db2777;
+    /* pink-600 */
+    --bg-glass-header: rgba(17, 7, 16, 0.85);
+    --bg-glass-panel: rgba(31, 18, 29, 0.95);
+    --bg-input: #1f121d;
+    --bg-input-hover: #291826;
+    --bg-alt-1: #291826;
+    --bg-alt-2: #3b1c31;
+    --bg-alt-3: #4e2642;
 }
 
-:root[data-theme="pink"] .bg-darkbg {
-    background-color: #fdf2f8 !important;
+/* Overriding global text styles based on theme variables */
+body {
+    background-color: var(--color-darkbg);
+    color: var(--text-primary);
 }
 
-:root[data-theme="pink"] .bg-darkcard {
-    background-color: #fff1f2 !important;
+.text-gray-300,
+.text-gray-200 {
+    color: var(--text-primary) !important;
 }
 
-:root[data-theme="pink"] .border-darkborder {
-    border-color: #fbcfe8 !important;
+.text-gray-400 {
+    color: var(--text-secondary) !important;
 }
 
-:root[data-theme="pink"] .text-gray-200,
-:root[data-theme="pink"] .text-gray-300 {
-    color: #831843 !important;
+.text-gray-500 {
+    color: var(--text-muted) !important;
 }
 
-:root[data-theme="pink"] .text-gray-400,
-:root[data-theme="pink"] .text-gray-500 {
-    color: #be185d !important;
+.bg-darkbg {
+    background-color: var(--color-darkbg) !important;
 }
 
-:root[data-theme="pink"] .glass-header {
-    background: rgba(253, 242, 248, 0.85) !important;
-    box-shadow: 0 4px 6px -1px rgba(251, 207, 232, 0.5);
+.bg-darkcard {
+    background-color: var(--color-darkcard) !important;
 }
 
-:root[data-theme="pink"] .glass-panel {
-    background: rgba(255, 241, 242, 0.95) !important;
+.border-darkborder {
+    border-color: var(--color-darkborder) !important;
 }
 
-:root[data-theme="pink"] .bg-kindle {
-    background-color: #ec4899 !important;
+.bg-\[\#1e1e1e\] {
+    background-color: var(--bg-input) !important;
 }
 
-:root[data-theme="pink"] .hover\:bg-kindlehover:hover {
-    background-color: #db2777 !important;
+.bg-\[\#252525\] {
+    background-color: var(--bg-input-hover) !important;
 }
 
-:root[data-theme="pink"] .border-kindle {
-    border-color: #ec4899 !important;
+.bg-\[\#1c1c1f\] {
+    background-color: var(--bg-alt-1) !important;
 }
 
-:root[data-theme="pink"] .ring-kindle {
-    --tw-ring-color: #ec4899 !important;
+.bg-\[\#252527\] {
+    background-color: var(--bg-alt-2) !important;
 }
 
-:root[data-theme="pink"] .text-kindle {
-    color: #ec4899 !important;
+.bg-\[\#2a2a2a\] {
+    background-color: var(--bg-alt-3) !important;
 }
 
-:root[data-theme="pink"] .bg-\[\#111\] {
-    background-color: #fce7f3 !important;
+.bg-\[\#333\] {
+    background-color: var(--color-darkborder) !important;
 }
 
-:root[data-theme="pink"] .bg-\[\#222\] {
-    background-color: #fdf2f8 !important;
+.border-\[\#333\] {
+    border-color: var(--color-darkborder) !important;
 }
 
-:root[data-theme="pink"] .bg-\[\#1c1c1f\] {
-    background-color: #fce7f3 !important;
+.border-\[\#2a2a2a\] {
+    border-color: var(--bg-alt-3) !important;
 }
 
-:root[data-theme="pink"] .bg-\[\#2a2a2a\] {
-    background-color: #f9a8d4 !important;
-    color: #831843 !important;
+/* Dynamic format-btn */
+.format-btn.bg-\[\#252527\] {
+    background-color: var(--bg-alt-2) !important;
 }
 
-:root[data-theme="pink"] .shadow-kindle\/20 {
-    --tw-shadow-color: rgba(236, 72, 153, 0.3) !important;
+/* Override kindle colors */
+.bg-kindle {
+    background-color: var(--color-kindle) !important;
+}
+
+.hover\:bg-kindlehover:hover {
+    background-color: var(--color-kindlehover) !important;
+}
+
+.text-kindle {
+    color: var(--color-kindle) !important;
+}
+
+.border-kindle {
+    border-color: var(--color-kindle) !important;
+}
+
+.shadow-kindle\/20 {
+    --tw-shadow-color: color-mix(in srgb, var(--color-kindle) 20%, transparent);
+}
+
+/* Device Filter Buttons */
+.device-active {
+    background-color: color-mix(in srgb, var(--color-kindle) 15%, transparent) !important;
+    color: var(--color-kindle) !important;
+    border-color: color-mix(in srgb, var(--color-kindle) 30%, transparent) !important;
+    border-width: 1px;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--color-kindle) 20%, transparent) !important;
+}
+
+.device-inactive {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    border-width: 1px;
 }
